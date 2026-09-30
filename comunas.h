@@ -1,0 +1,3 @@
+//Archivo h
+
+void TituloPrincipal();
