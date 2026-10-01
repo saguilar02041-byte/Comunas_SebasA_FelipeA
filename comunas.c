@@ -34,25 +34,50 @@ printf("════════════════════════
 
 int leerPersonas(){
     //abro el archivo
-    FILE* personas = fopen("bienes", "r");
+    FILE* personas = fopen("personas", "r");
 
     //verifico que se encuentre
     if(personas == NULL){
-        printf("ok, no encontré el archivo\n");
+        printf("Error, no encontré el archivo\n");
         return -1;
     }
 
-    char nombre[30];
+    char nombre[15];
     
     while( feof(personas) == 0){
-        fgets(nombre, 100, personas);
+        fgets(nombre, 15, personas);
         printf("%s", nombre);
     }
 
-    fclose("personas");
+    fclose(personas);
     return 0;
 }
 
+/*
+======================================================================
+        | Funciones de las estructuras de datos |
+======================================================================
+*/
+
+struct DiccionarioBienes crearDiccionarioBienes(){
+    struct DiccionarioBienes* diccionario = calloc(1, sizeof(struct DiccionarioBienes)); 
+    
+    
+    
+}
+void añadirAlDiccionario(){
+    
+}
+
+
+
+
+
+/*
+======================================================================
+                                | Main |
+======================================================================
+*/
 int main(){
 
     //Llamar funcion que imprime el titulo
