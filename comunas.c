@@ -41,7 +41,7 @@ void imprimirLento(int retraso_ms, const char* formato, ...){
 ======================================================================
 */
 void TituloPrincipal(){
-    imprimirLento(200,
+    imprimirLento(75,
         "╔══════════════════════════════════════════╗\n"
         "║ ▄▄·       • ▌ ▄ ·. ▄• ▄▌ ▐ ▄  ▄▄▄· .▄▄ · ║\n"
         "║▐█ ▌▪▪     ·██ ▐███▪█▪██▌•█▌▐█▐█ ▀█ ▐█ ▀. ║\n"
@@ -100,6 +100,31 @@ int leerPersonas(){
     return 0;
 }
 
+void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
+    FILE* bienes = fopen("bienes", "r");
+
+    //agregar validacion que el coso no sea null
+
+    //------------si queremos hacerlo random se debe de modificar el while
+    char bien[30];
+    for(int i=0; i<cantidad || feof(bienes)==0; i++){
+        
+        fgets(bien, 30, bienes);                           //agarro el bien
+        hashDiccionarioBienes(bien, diccionario->tamaño);  //calculo su posicion
+
+
+    }
+}
+//terminar estooooooooooooooooooooooooooooooooo
+int hashDiccionarioBienes(char* texto, int tamaño){
+    int hash = 0;
+    while(texto){
+        hash = (hash * 7) + (int)texto;
+        texto++;
+    }
+    return hash % tamaño;
+}
+
 
 /*
 ======================================================================
@@ -107,28 +132,51 @@ int leerPersonas(){
 ======================================================================
 */
 
-struct DiccionarioBienes crearDiccionarioBienes(){
+struct DiccionarioBienes* crearDiccionarioBienes(int tamaño){
+    //creo el diccionario
     struct DiccionarioBienes* diccionario = calloc(1, sizeof(struct DiccionarioBienes)); 
+    diccionario->tamaño = tamaño;
     
-    
-    
+    //le añado la cantidad de espacios
+    for(int i = 0; i < tamaño; i++){
+        añadirAlDiccionario(diccionario);
+    }
+    return diccionario; 
 }
-void añadirAlDiccionario(){
-    
+void añadirAlDiccionario(struct DiccionarioBienes* diccionario){
+    //creo el nodo
+    struct nodoDic* nn = calloc(1, sizeof(struct nodoDic));
+
+    //añado al inicio
+    nn->sigt = diccionario->inicio;
+    diccionario->inicio = nn;
+}
+void añadirBien(){
+
+
+
+}
+void imprimirDiccionarioBienes(){
+    //hacer esto
 }
 
 
 
 /*
 ======================================================================
-                                | Main |
+                            | Main |
 ======================================================================
 */
 int main(){
 
     //Llamar funcion que imprime el titulo
-    TituloPrincipal();
-    leerPersonas();
+    //TituloPrincipal();
+    //leerPersonas();
+
+    char* texto = "holaaaaa";
+    printf("%d", hashDiccionarioBienes(texto,10));
+
+
 
     return 0;
 }

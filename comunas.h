@@ -10,9 +10,27 @@ void TituloPrincipal();
  */
 int leerPersonas();
 
-//Diccionario que guarda los bienes para cada comuna 
+/**
+ * Función que lee el archivo de bienes y los mete a un diccionario
+ * @param int cantidad
+ */
+void agregarBienesDiccionario();
+
+/**
+ * Función de hash del diccionario de bienes
+ * @param char*
+ */
+int hashDiccionarioBienes();
+
+/**
+ * Función uqe imprime el diccionario de bienes
+ */
+void imprimirDiccionarioBienes();
+
+//Diccionario que guarda los bienes para cada comuna
 struct DiccionarioBienes{
     struct nodoDic* inicio;
+    int tamaño;
 };
 struct nodoDic{
     struct nodoDic* sigt;
@@ -24,3 +42,17 @@ struct nodoBienes{
     struct nodoBienes* sigt;
 };
 
+/**
+ * Función que crea un diccionario de bienes
+ * @param int tamaño del diccionario
+ */
+struct DiccionarioBienes* crearDiccionarioBienes();
+/**
+ * Función que crea y añade un elemento al diccionario de bienes 
+ */
+void añadirAlDiccionario();
+/**
+ * Función que crea y añade un nodoBienes al diccionario
+ * @param int posición
+ */
+void añadirBien();
