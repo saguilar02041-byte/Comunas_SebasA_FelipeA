@@ -47,12 +47,23 @@ struct nodoBienes{
  * @param int tamaño del diccionario
  */
 struct DiccionarioBienes* crearDiccionarioBienes();
+
+/**
+ * Función que crea un nodo con un bien y su respectiva cantidad 
+ * @param int cantidad
+ * @param char* nombre
+ */
+struct nodoBienes* crearNodoBien(int cantidad, char* nombre);
+
 /**
  * Función que crea y añade un elemento al diccionario de bienes 
  */
 void añadirAlDiccionario();
+
 /**
  * Función que crea y añade un nodoBienes al diccionario
+ * @param char* nombre del bien
  * @param int posición
+ * @param diccionario a añadir
  */
 void añadirBien();

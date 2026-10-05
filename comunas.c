@@ -79,27 +79,6 @@ void TituloPrincipal(){
 ======================================================================
 */
 
-int leerPersonas(){
-    //abro el archivo
-    FILE* personas = fopen("personas", "r");
-
-    //verifico que se encuentre
-    if(personas == NULL){
-        printf("Error, no encontré el archivo\n");
-        return -1;
-    }
-
-    char nombre[15];
-    
-    while( feof(personas) == 0){
-        fgets(nombre, 15, personas);
-        printf("%s", nombre);
-    }
-
-    fclose(personas);
-    return 0;
-}
-
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
 
@@ -109,17 +88,19 @@ void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionari
     char bien[30];
     for(int i=0; i<cantidad || feof(bienes)==0; i++){
         
-        fgets(bien, 30, bienes);                           //agarro el bien
-        hashDiccionarioBienes(bien, diccionario->tamaño);  //calculo su posicion
+        fgets(bien, 30, bienes);                                            //agarro el bien
+        int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
-
+        //----- aquí también se debe añadir una función que calcule la cantidad de bien que haya
+        struct nodoBienes* nodoBien = crearNodoBien(cantidad, bien);               //creo su nodo
+        añadirBien(nodoBien, posicion, diccionario);                        //lo añado
     }
 }
-//terminar estooooooooooooooooooooooooooooooooo
+
 int hashDiccionarioBienes(char* texto, int tamaño){
     int hash = 0;
-    while(texto){
-        hash = (hash * 7) + (int)texto;
+    for(int i=0; i < strlen(texto); i++){
+        hash = (hash * 7) + texto[i];
         texto++;
     }
     return hash % tamaño;
@@ -143,6 +124,16 @@ struct DiccionarioBienes* crearDiccionarioBienes(int tamaño){
     }
     return diccionario; 
 }
+
+struct nodoBienes* crearNodoBien(int cantidad, char* nombre){
+    struct nodoBienes* nuevo = calloc(1, sizeof(struct nodoBienes));
+
+    nuevo->nombre = nombre;
+    nuevo->cantidad = cantidad;
+
+    return nuevo;
+}
+
 void añadirAlDiccionario(struct DiccionarioBienes* diccionario){
     //creo el nodo
     struct nodoDic* nn = calloc(1, sizeof(struct nodoDic));
@@ -151,13 +142,41 @@ void añadirAlDiccionario(struct DiccionarioBienes* diccionario){
     nn->sigt = diccionario->inicio;
     diccionario->inicio = nn;
 }
-void añadirBien(){
 
+//--------------------------------creo que esto es lo que falla
+void añadirBien(struct nodoBienes* bien, int pos, struct DiccionarioBienes* diccionario){
+    struct nodoDic* actual = diccionario->inicio;
+    
+    //recorro el diccionario hasta encontrar la posicion
+    for(int i=0; i<pos; i++){
+        actual = actual->sigt;
+    }
 
+    //coloco el bien 
+    struct nodoBienes* espacio = actual->bienes;    
+    while(espacio != NULL)                      //busco un espacio si hay colisiones
+        espacio = espacio->sigt;
 
+    espacio = bien;
 }
-void imprimirDiccionarioBienes(){
-    //hacer esto
+
+void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
+    struct nodoDic* actual = diccionario->inicio;
+
+    //recorro cada nodo del diccionario
+    for(int i=0; i < diccionario->tamaño; i++){
+        printf("%d. ", i);
+        
+        //busco todos lo que cayeron en la lista de dicho nodo
+        struct nodoBienes* bien = actual->bienes;
+        while(bien != NULL){
+            printf("%s - ", bien->nombre);
+            bien = bien->sigt;
+        }
+
+        printf("\n");
+        actual = actual->sigt;
+    }
 }
 
 
@@ -169,12 +188,9 @@ void imprimirDiccionarioBienes(){
 */
 int main(){
 
-    //Llamar funcion que imprime el titulo
-    //TituloPrincipal();
-    //leerPersonas();
-
-    char* texto = "holaaaaa";
-    printf("%d", hashDiccionarioBienes(texto,10));
+    struct DiccionarioBienes* diccionario = crearDiccionarioBienes(15);
+    agregarBienesDiccionario(30, diccionario);
+    imprimirDiccionarioBienes(diccionario);
 
 
 
