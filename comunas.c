@@ -82,26 +82,34 @@ void TituloPrincipal(){
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
 
-    //agregar validacion que el coso no sea null
-
-    //------------si queremos hacerlo random se debe de modificar el while
+    //------------si queremos hacerlo random se debe hacer una función aparte
+    
     char bien[30];
-    for(int i=0; i<cantidad || feof(bienes)==0; i++){
+    for(int i=0; i<cantidad && fgets(bien,30,bienes) != NULL; i++){
         
-        fgets(bien, 30, bienes);                                            //agarro el bien
+        bien[strcspn(bien, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
         int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
-        //----- aquí también se debe añadir una función que calcule la cantidad de bien que haya
-        struct nodoBienes* nodoBien = crearNodoBien(cantidad, bien);               //creo su nodo
+        //saco una cantidad random
+        int cantBien = randomIntervalo(2,15);
+
+        struct nodoBienes* nodoBien = crearNodoBien(cantBien, bien);        //creo su nodo
         añadirBien(nodoBien, posicion, diccionario);                        //lo añado
     }
+
+    fclose(bienes);
+}
+
+int randomIntervalo(int min, int max){
+    int nRandom;
+    nRandom = min + rand() % (max - min +1);
+    return nRandom;
 }
 
 int hashDiccionarioBienes(char* texto, int tamaño){
-    int hash = 0;
-    for(int i=0; i < strlen(texto); i++){
+    unsigned int hash = 0;                  //ok al parece ocupa ser unsigned para que si se desborda, no dé negativos
+    for(int i=0; texto[i] != '\0'; i++){
         hash = (hash * 7) + texto[i];
-        texto++;
     }
     return hash % tamaño;
 }
@@ -111,6 +119,12 @@ int hashDiccionarioBienes(char* texto, int tamaño){
 ======================================================================
         | Funciones de las estructuras de datos |
 ======================================================================
+*/
+
+/*
+=================================================
+            | Diccionario de Bienes|
+=================================================
 */
 
 struct DiccionarioBienes* crearDiccionarioBienes(int tamaño){
@@ -128,7 +142,7 @@ struct DiccionarioBienes* crearDiccionarioBienes(int tamaño){
 struct nodoBienes* crearNodoBien(int cantidad, char* nombre){
     struct nodoBienes* nuevo = calloc(1, sizeof(struct nodoBienes));
 
-    nuevo->nombre = nombre;
+    nuevo->nombre = strdup(nombre);     //al parecer el strdup mega arregla todo, no cambiar!!!!!
     nuevo->cantidad = cantidad;
 
     return nuevo;
@@ -143,7 +157,6 @@ void añadirAlDiccionario(struct DiccionarioBienes* diccionario){
     diccionario->inicio = nn;
 }
 
-//--------------------------------creo que esto es lo que falla
 void añadirBien(struct nodoBienes* bien, int pos, struct DiccionarioBienes* diccionario){
     struct nodoDic* actual = diccionario->inicio;
     
@@ -152,12 +165,31 @@ void añadirBien(struct nodoBienes* bien, int pos, struct DiccionarioBienes* dic
         actual = actual->sigt;
     }
 
-    //coloco el bien 
+    //coloco el bien (ingresar al inicio) 
     struct nodoBienes* espacio = actual->bienes;    
-    while(espacio != NULL)                      //busco un espacio si hay colisiones
-        espacio = espacio->sigt;
+    bien->sigt = espacio;
+    actual->bienes = bien;
+}
 
-    espacio = bien;
+struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* bien){
+    int pos = hashDiccionarioBienes(bien, diccionario->tamaño);
+
+    //recorro el diccionario hasta encontrar la posicion
+    struct nodoDic* actual = diccionario->inicio;
+    for(int i=0; i<pos; i++){
+        actual = actual->sigt;
+    }
+
+    //dentro de la casilla busco el bien
+    struct nodoBienes* nodoBien = actual->bienes;
+    while(nodoBien != NULL){
+        if(nodoBien->nombre == bien)
+            return nodoBien;
+        
+        nodoBien = nodoBien->sigt;
+    }
+
+    return NULL; //si no lo encuentra
 }
 
 void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
@@ -192,7 +224,7 @@ int main(){
     agregarBienesDiccionario(30, diccionario);
     imprimirDiccionarioBienes(diccionario);
 
-
+    printf("%s", diccionario->inicio->bienes->nombre);
 
     return 0;
 }

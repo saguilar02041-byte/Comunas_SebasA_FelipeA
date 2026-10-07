@@ -23,6 +23,13 @@ void agregarBienesDiccionario();
 int hashDiccionarioBienes();
 
 /**
+ * Función que saca un numero random entre un intervalo
+ * @param int min
+ * @param int max
+ */
+int randomIntervalo(int min, int max);
+
+/**
  * Función uqe imprime el diccionario de bienes
  */
 void imprimirDiccionarioBienes();
@@ -67,3 +74,10 @@ void añadirAlDiccionario();
  * @param diccionario a añadir
  */
 void añadirBien();
+
+/**
+ * Función que busca un bien en el diccionario a partir del nombre
+ * @param diccionario
+ * @param nombre del bien a buscar
+ */
+struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* bien);
