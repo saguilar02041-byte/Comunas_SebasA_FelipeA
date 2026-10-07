@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h> 
+#include <ctype.h>
+#include <time.h>
+
 /*
 ======================================================================
             | Funcion que Imprime Lentamente el Texto Principal |
@@ -79,6 +82,12 @@ void TituloPrincipal(){
 ======================================================================
 */
 
+void convertirMinusculas(char* str){
+    for(int i=0; str[i]!= '\0'; i++){
+        str[i] = tolower(str[i]);
+    }
+}
+
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
 
@@ -88,6 +97,8 @@ void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionari
     for(int i=0; i<cantidad && fgets(bien,30,bienes) != NULL; i++){
         
         bien[strcspn(bien, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
+        convertirMinusculas(bien);          //lo convertiremos a minusculas
+
         int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
         //saco una cantidad random
@@ -171,8 +182,14 @@ void añadirBien(struct nodoBienes* bien, int pos, struct DiccionarioBienes* dic
     actual->bienes = bien;
 }
 
-struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* bien){
-    int pos = hashDiccionarioBienes(bien, diccionario->tamaño);
+struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombre){
+    //copio lo que busco para no modificar el original  
+    char buscado[30];                                   
+    strncpy(buscado, nombre, 29);
+    buscado[29] = '\0';
+    convertirMinusculas(buscado);
+    
+    int pos = hashDiccionarioBienes(buscado, diccionario->tamaño);
 
     //recorro el diccionario hasta encontrar la posicion
     struct nodoDic* actual = diccionario->inicio;
@@ -181,12 +198,13 @@ struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* bien)
     }
 
     //dentro de la casilla busco el bien
-    struct nodoBienes* nodoBien = actual->bienes;
-    while(nodoBien != NULL){
-        if(nodoBien->nombre == bien)
-            return nodoBien;
+    struct nodoBienes* bien = actual->bienes;
+    while(bien != NULL){
+
+        if(strcmp(bien->nombre, buscado) == 0)
+            return bien;
         
-        nodoBien = nodoBien->sigt;
+        bien = bien->sigt;
     }
 
     return NULL; //si no lo encuentra
@@ -219,12 +237,16 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 ======================================================================
 */
 int main(){
+    srand(time(NULL));
 
-    struct DiccionarioBienes* diccionario = crearDiccionarioBienes(15);
-    agregarBienesDiccionario(30, diccionario);
+    struct DiccionarioBienes* diccionario = crearDiccionarioBienes(10);
+    agregarBienesDiccionario(10, diccionario);
     imprimirDiccionarioBienes(diccionario);
 
-    printf("%s", diccionario->inicio->bienes->nombre);
+    char* nombre = "hArinA";
+    struct nodoBienes* buscar = buscarBien(diccionario, nombre);
+
+    printf("%d\n", buscar->cantidad);
 
     return 0;
 }
