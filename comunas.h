@@ -12,7 +12,7 @@ int leerPersonas();
 
 /**
  * Función que lee el archivo de bienes y los mete a un diccionario
- * @param int cantidad
+ * @param int cantidad de bienes a agregar
  */
 void agregarBienesDiccionario();
 
@@ -78,6 +78,50 @@ void añadirBien();
 /**
  * Función que busca un bien en el diccionario a partir del nombre
  * @param diccionario
- * @param nombre del bien a buscar
+ * @param char* nombre del bien a buscar
  */
-struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* bien);
+struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombre);
+
+//lista simple para guardar los habitantes de una comuna
+struct listaPersonas{
+    struct nodoListaPersonas* inicio;
+};
+struct nodoListaPersonas{
+    char* nombre;
+    struct nodoListaPersonas* sigt;
+};
+
+
+//struct de las comunas
+struct comuna{
+    char* nombre;
+
+    struct DiccionarioBienes* diccionario;
+
+};
+
+/**
+ * Función para crear una comuna
+ * @param nombre
+ * @param int tamaño del diccionario
+ */
+struct comuna* crearComuna(char* nombre, int tamañoDicc);
+
+//matriz que almacena las comunas
+struct matrizComunas{
+    struct nodoMatriz* inicio;
+};
+//nodos de la matriz de comunas
+struct nodoMatriz{
+    struct nodoMatriz* arriba;
+    struct nodoMatriz* abajo;
+    struct nodoMatriz* izquierda;
+    struct nodoMatriz* derecha;
+
+    struct comuna* comuna;
+};
+
+/**
+ * Función que crea un nodo de matriz a la derecha y lo enlaza
+ */
+void enlazarDerecha(struct nodoMatriz*);

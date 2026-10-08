@@ -78,7 +78,7 @@ void TituloPrincipal(){
 
 /*
 ======================================================================
-        | Funciones que leen los archivos con nombres |
+            | Funciones utiles en toda la progra |
 ======================================================================
 */
 
@@ -87,6 +87,18 @@ void convertirMinusculas(char* str){
         str[i] = tolower(str[i]);
     }
 }
+
+int randomIntervalo(int min, int max){
+    int nRandom;
+    nRandom = min + rand() % (max - min +1);
+    return nRandom;
+}
+
+/*
+======================================================================
+        | Funciones que leen los archivos con nombres |
+======================================================================
+*/
 
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
@@ -102,19 +114,13 @@ void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionari
         int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
         //saco una cantidad random
-        int cantBien = randomIntervalo(2,15);
+        int cantBien = randomIntervalo(3,15);
 
         struct nodoBienes* nodoBien = crearNodoBien(cantBien, bien);        //creo su nodo
         añadirBien(nodoBien, posicion, diccionario);                        //lo añado
     }
 
     fclose(bienes);
-}
-
-int randomIntervalo(int min, int max){
-    int nRandom;
-    nRandom = min + rand() % (max - min +1);
-    return nRandom;
 }
 
 int hashDiccionarioBienes(char* texto, int tamaño){
@@ -229,6 +235,28 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
     }
 }
 
+/*
+=================================================
+            | Diccionario de Bienes|
+=================================================
+*/
+
+struct comuna* crearComuna(char* nombre, int tamañoDicc){
+    struct comuna* nueva = calloc(1, sizeof(struct comuna));
+    
+    //le pongo el nombre
+    nueva->nombre = nombre;
+
+    nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
+    agregarBienesDiccionario(tamañoDicc, nueva->diccionario);
+}
+
+/*
+=================================================
+            | Matriz de comunas|
+=================================================
+*/
+
 
 
 /*
@@ -239,14 +267,12 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 int main(){
     srand(time(NULL));
 
-    struct DiccionarioBienes* diccionario = crearDiccionarioBienes(10);
-    agregarBienesDiccionario(10, diccionario);
-    imprimirDiccionarioBienes(diccionario);
+    //da segmentation fault, hay que arreglarlo
+    struct comuna* nueva = crearComuna("holaa", 15);
 
-    char* nombre = "hArinA";
-    struct nodoBienes* buscar = buscarBien(diccionario, nombre);
+    printf("%s", nueva->nombre);
+    //printf("%s", nueva->diccionario->inicio->bienes->nombre);
 
-    printf("%d\n", buscar->cantidad);
 
     return 0;
 }
