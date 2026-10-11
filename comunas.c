@@ -94,6 +94,19 @@ int randomIntervalo(int min, int max){
     return nRandom;
 }
 
+int pedir_int(){
+
+    int valor;           
+    while(1){
+        if(scanf("%d", &valor) == 0){               //si el scan da error
+            printf("te estoy pidiendo un número entero!!\n");
+            getchar();                  //no entiendo por qué el getchar soluciona todos mis problemas, pero ahí está
+            continue;
+        }
+        break;}
+    return valor;
+}
+
 /*
 ======================================================================
         | Funciones que leen los archivos con nombres |
@@ -266,11 +279,28 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 
 
 
+
 /*
 =================================================
         | Lista simple de Personas|
 =================================================
 */
+
+struct listaSimple* crearListaSimple(){
+    struct listaSimple* nuevaLista = calloc(1, sizeof(struct listaSimple*));
+    return nuevaLista;
+}
+
+struct nodoListaSimple* crearNodoListaSimple(char* nombre){
+    struct nodoListaSimple* nuevoNodo = calloc(1, sizeof(struct nodoListaSimple*));
+    nuevoNodo->nombre = nombre;
+    return nuevoNodo;
+}
+
+void agregarNodoSimple(struct nodoListaSimple* nodo, struct listaSimple* lista){
+    nodo->sigt = lista->inicio;
+    lista->inicio = nodo;
+}
 
 
 
@@ -286,8 +316,12 @@ struct comuna* crearComuna(char* nombre, int tamañoDicc){
     //le pongo el nombre
     nueva->nombre = nombre;
 
+    //creo el diccionario
     nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
     agregarBienesDiccionario(tamañoDicc, nueva->diccionario);
+
+    //creo la lista para meter personas
+    nueva->nombre = crearListaSimple();
 
     return nueva;
 }

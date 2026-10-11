@@ -18,6 +18,13 @@ void TituloPrincipal();
  */
 int randomIntervalo(int min, int max);
 
+
+/**
+* Función que pide un int al usuario
+* @return int
+*/
+int pedir_int();
+
 /*
 =================================================
         | Funciones Diccionario de Bienes|
@@ -96,14 +103,43 @@ struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombr
 =================================================
 */
 
-//lista simple para guardar los habitantes de una comuna
-struct listaPersonas{
-    struct nodoListaPersonas* inicio;
+//lista simple para guardar los habitantes de una comuna y los servicios
+struct listaSimple{
+    struct nodoListaSimple* inicio;
 };
-struct nodoListaPersonas{
+struct nodoListaSimple{
     char* nombre;
-    struct nodoListaPersonas* sigt;
+    struct nodoListaSimple* sigt;
 };
+
+/**
+ * Función que crea una lista de personas/servicios para cada comuna
+ */
+struct listaSimple* crearListaSimple();
+
+/**
+ * Función que crea un nodo de las lista de personas/servicios y le agrega el nombre
+ */
+struct nodoListaSimple* crearNodoListaSimple(char* nombre);
+
+/**
+ * Función que añade un nodo a la lista de personas/servicios
+ */
+void agregarNodoSimple(struct nodoListaSimple* nodo, struct listaSimple* lista);
+
+/**
+ * Función que elimina la primer persona/servicios de una lista
+ */
+void eliminarInicioSimple(struct listaSimple* lista);
+
+/*
+=================================================
+    | Funciones de la lista de servicios|
+=================================================
+*/
+
+//lista enlazada simple de los servicios
+//luego hacer esto
 
 /*
 =================================================
