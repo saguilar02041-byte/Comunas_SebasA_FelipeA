@@ -301,7 +301,7 @@ struct matrizComunas* crearMatriz(int tamaño){
         actual = actual->derecha;               //paso al siguiente
         
         //si justamente es el ultimo le agrego uno abajo
-        if(i == tamaño){
+        if(i == tamaño-1){
             actual->abajo = crearNodoMatriz();
             enlazarAbajo(actual);
         }
@@ -319,30 +319,37 @@ struct matrizComunas* crearMatriz(int tamaño){
     actual = nuevaComuna->inicio->abajo;
     i=0;
     while(i++ < tamaño-2){
+
         //en la fila agrego nodos abajo
-        for(int j=0; j < tamaño-1; j++){
+        for(int j=0; j < tamaño; j++){
             actual->abajo = crearNodoMatriz();
             enlazarAbajo(actual);
-
-            actual = actual->derecha;
+        
+            //en el ultimo no se mueve a la derecha
+            if(j < tamaño-1)
+                actual = actual->derecha;
         }
 
-        //me devuelvo
+        //me devuelvo al inicio de la fila
         for(int j=0; j < tamaño-1; j++){
             actual = actual->izquierda;
         }
 
-        //empiezo a enlazar los de abajo
-        for(int j=0; j < tamaño-2; j++){
+        //empiezo a enlazar horizontalmente los de abajo
+        for(int j=0; j < tamaño-1; j++){
             enlazarNodosAbajo(actual);
             actual = actual->derecha;
         }
 
-        //me devuelvo
+        //me devuelvo al inicio de la fila
         for(int j=0; j < tamaño-1; j++){
             actual = actual->izquierda;
         }
+
+        //bajo para hacer lo mismo denuevo si se ocupa
+        actual = actual->abajo;
     }
+    return nuevaComuna;
 }
 
 struct nodoMatriz* crearNodoMatriz(){
@@ -376,11 +383,14 @@ int enlazarAbajo(struct nodoMatriz* nodo){
 int enlazarNodosAbajo(struct nodoMatriz* nodo){
     struct nodoMatriz* abajo = nodo->abajo;
     struct nodoMatriz* derecha = nodo->derecha;
-    struct nodoMatriz* abajoDerecha = derecha->abajo;
 
-    if(abajo==NULL || derecha==NULL || abajoDerecha==NULL)
+    if(abajo==NULL || derecha==NULL)
         return 0;
 
+    struct nodoMatriz* abajoDerecha = derecha->abajo;
+    if(abajoDerecha==NULL)
+        return 0;
+    
     abajo->derecha = abajoDerecha;
     abajoDerecha->izquierda = abajo;
     return 1;
@@ -395,13 +405,15 @@ int enlazarNodosAbajo(struct nodoMatriz* nodo){
 int main(){
     srand(time(NULL));
 
-    //da segmentation fault, hay que arreglarlo
-    struct comuna* nueva = crearComuna("holaa", 15);
+    struct matrizComunas* tablero = crearMatriz(4);
 
-    printf("%s", nueva->nombre);
-    printf("%s", nueva->diccionario->inicio->bienes->nombre);
+    printf("%d\n", tablero->tamaño);
 
-    struct matrizComunas* tablero = crearMatriz(3);
+    tablero->inicio->derecha->derecha->abajo->abajo->abajo->comuna = crearComuna("tercera", 10);
+    printf("%s\n", tablero->inicio->derecha->derecha->abajo->abajo->abajo->comuna->nombre);
+
+
+
 
     return 0;
 }
