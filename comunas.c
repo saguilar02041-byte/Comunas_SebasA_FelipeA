@@ -103,6 +103,11 @@ int randomIntervalo(int min, int max){
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
 
+    if(bienes == NULL){
+        perror("No se pudo abrir 'bienes'");
+        return;
+    }
+    
     //------------si queremos hacerlo random se debe hacer una función aparte
     
     char bien[30];
@@ -131,6 +136,24 @@ int hashDiccionarioBienes(char* texto, int tamaño){
     return hash % tamaño;
 }
 
+/* terminar luego!!!!!!!!!!!!!!!!!!!!!!!!!!1
+void agregarComunas(int cantidad, struct matrizComunas*){
+
+    FILE* comunas = fopen("comunas", "r");
+
+    if(comunas == NULL){
+        perror("No se pudo abrir 'comunas'");
+        return;
+    }
+    
+    //------------si queremos hacerlo random se debe hacer una función aparte
+    
+    char comuna[50];
+    for(int i=0; i<cantidad && fgets(comunas,50,comunas) != NULL; i++){
+
+        comuna[strcspn(comuna, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
+    }
+}*/
 
 /*
 ======================================================================
@@ -249,6 +272,8 @@ struct comuna* crearComuna(char* nombre, int tamañoDicc){
 
     nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
     agregarBienesDiccionario(tamañoDicc, nueva->diccionario);
+
+    return nueva;
 }
 
 /*
@@ -257,6 +282,109 @@ struct comuna* crearComuna(char* nombre, int tamañoDicc){
 =================================================
 */
 
+struct matrizComunas* crearMatriz(int tamaño){
+    struct matrizComunas* nuevaComuna = calloc(1, sizeof(struct matrizComunas));
+
+    nuevaComuna->tamaño = tamaño;
+    nuevaComuna->inicio = crearNodoMatriz();
+
+    //agrego una linea de nodos
+    struct nodoMatriz* actual = nuevaComuna->inicio;
+    int i=0;
+    while(i++ < tamaño-1){
+        actual->derecha = crearNodoMatriz();    //creo un nodo a la par
+        enlazarDerecha(actual);                 //los enlazo
+
+        actual->abajo = crearNodoMatriz();      //creo un nodo abajo
+        enlazarAbajo(actual);                   //los enlazo
+
+        actual = actual->derecha;               //paso al siguiente
+        
+        //si justamente es el ultimo le agrego uno abajo
+        if(i == tamaño){
+            actual->abajo = crearNodoMatriz();
+            enlazarAbajo(actual);
+        }
+    }
+
+    //me devuelvo
+    actual = nuevaComuna->inicio;
+    i=0;
+    while(i++ < tamaño-1){
+        enlazarNodosAbajo(actual);      //enlazo los nodos de abajo
+        actual = actual->derecha;       //paso al siguiente
+    }
+
+    //empiezo a bajar
+    actual = nuevaComuna->inicio->abajo;
+    i=0;
+    while(i++ < tamaño-2){
+        //en la fila agrego nodos abajo
+        for(int j=0; j < tamaño-1; j++){
+            actual->abajo = crearNodoMatriz();
+            enlazarAbajo(actual);
+
+            actual = actual->derecha;
+        }
+
+        //me devuelvo
+        for(int j=0; j < tamaño-1; j++){
+            actual = actual->izquierda;
+        }
+
+        //empiezo a enlazar los de abajo
+        for(int j=0; j < tamaño-2; j++){
+            enlazarNodosAbajo(actual);
+            actual = actual->derecha;
+        }
+
+        //me devuelvo
+        for(int j=0; j < tamaño-1; j++){
+            actual = actual->izquierda;
+        }
+    }
+}
+
+struct nodoMatriz* crearNodoMatriz(){
+    struct nodoMatriz* nuevoNodo = calloc(1, sizeof(struct nodoMatriz));
+    return nuevoNodo;
+}
+
+
+int enlazarDerecha(struct nodoMatriz* nodo){
+    struct nodoMatriz* derecha = nodo->derecha;
+
+    if(derecha == NULL){
+        return 0;
+    }
+
+    derecha->izquierda = nodo;
+    return 1;
+}
+
+int enlazarAbajo(struct nodoMatriz* nodo){
+    struct nodoMatriz* abajo = nodo->abajo;
+
+    if(abajo == NULL){
+        return 0;
+    }
+
+    abajo->arriba = nodo;
+    return 1;
+}
+
+int enlazarNodosAbajo(struct nodoMatriz* nodo){
+    struct nodoMatriz* abajo = nodo->abajo;
+    struct nodoMatriz* derecha = nodo->derecha;
+    struct nodoMatriz* abajoDerecha = derecha->abajo;
+
+    if(abajo==NULL || derecha==NULL || abajoDerecha==NULL)
+        return 0;
+
+    abajo->derecha = abajoDerecha;
+    abajoDerecha->izquierda = abajo;
+    return 1;
+}
 
 
 /*
@@ -271,8 +399,9 @@ int main(){
     struct comuna* nueva = crearComuna("holaa", 15);
 
     printf("%s", nueva->nombre);
-    //printf("%s", nueva->diccionario->inicio->bienes->nombre);
+    printf("%s", nueva->diccionario->inicio->bienes->nombre);
 
+    struct matrizComunas* tablero = crearMatriz(3);
 
     return 0;
 }

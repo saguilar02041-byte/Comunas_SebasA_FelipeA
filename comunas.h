@@ -95,6 +95,10 @@ struct nodoListaPersonas{
 //struct de las comunas
 struct comuna{
     char* nombre;
+    int numero;
+
+    double necesidad;
+    double satisfaccion;
 
     struct DiccionarioBienes* diccionario;
 
@@ -110,6 +114,7 @@ struct comuna* crearComuna(char* nombre, int tamañoDicc);
 //matriz que almacena las comunas
 struct matrizComunas{
     struct nodoMatriz* inicio;
+    int tamaño;
 };
 //nodos de la matriz de comunas
 struct nodoMatriz{
@@ -123,5 +128,36 @@ struct nodoMatriz{
 
 /**
  * Función que crea un nodo de matriz a la derecha y lo enlaza
+ * @return int 0=no lo logró, 1=sí
  */
-void enlazarDerecha(struct nodoMatriz*);
+int enlazarDerecha(struct nodoMatriz* nodo);
+
+/**
+ * Función que crea un nodo de matriz abajo y lo enlaza
+ * @return int 0=no lo logró, 1=sí
+ */
+int enlazarAbajo(struct nodoMatriz* nodo);
+
+/**
+ * Función que anlaza dos nodos, el que tiene abajo con el que debería de tener a su derecha
+ * @return int 0=no lo logró, 1=sí
+ */
+int enlazarNodosAbajo(struct nodoMatriz* nodo);
+
+/**
+ * Función que crea la matriz de comuna
+ * @param tamaño
+ */
+struct matrizComunas* crearMatriz(int tamaño);
+
+/**
+ * Función que crea un nodo de una matriz
+ */
+struct nodoMatriz* crearNodoMatriz();
+
+/**
+ * Función que lee el archivo de comunas y las agrega todas en la matriz 
+ * @param int cantidad a agregar
+ * @param struct de la matriz donde se agregará
+ */
+void agregarComunas(int cantidad, struct matrizComunas*);
