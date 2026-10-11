@@ -310,11 +310,12 @@ void agregarNodoSimple(struct nodoListaSimple* nodo, struct listaSimple* lista){
 =================================================
 */
 
-struct comuna* crearComuna(char* nombre, int tamañoDicc){
+struct comuna* crearComuna(char* nombre, int numero, int tamañoDicc){
     struct comuna* nueva = calloc(1, sizeof(struct comuna));
     
     //le pongo el nombre
     nueva->nombre = nombre;
+    nueva->numero = numero;
 
     //creo el diccionario
     nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
@@ -446,6 +447,50 @@ int enlazarNodosAbajo(struct nodoMatriz* nodo){
     return 1;
 }
 
+/*
+======================================================================
+                            | Imrpimir Matriz |
+======================================================================
+*/
+void imprimirNumero(){
+
+
+}
+void imprimirSatis(){
+
+
+}
+
+void imprimirNece(){
+
+
+}
+
+void imprimirMatriz(struct matrizComunas* matriz){
+
+
+}
+
+/*
+======================================================================
+                            | Menues Juego |
+======================================================================
+*/
+
+void iniciarPartida(){
+    imprimirLento(75,
+        "═════════════════════════════════════════════\n"
+        "        Bienvenido a Comunas Paradox         \n"
+        "                                             \n"
+        "Un juego dónde debes administrar una sociedad\n"
+        "de comunas para lograr aguantar la mayor     \n"
+        "cantidad de días que puedas.                 \n"
+        "                                             \n"
+        "ENTER para continuar                         \n\n"
+    );
+    getchar();
+    return;
+}
 
 /*
 ======================================================================
@@ -455,15 +500,11 @@ int enlazarNodosAbajo(struct nodoMatriz* nodo){
 int main(){
     srand(time(NULL));
 
-    struct matrizComunas* tablero = crearMatriz(4);
+    //struct matrizComunas* tablero = crearMatriz(3);
 
-    printf("%d\n", tablero->tamaño);
-
-    tablero->inicio->derecha->derecha->abajo->abajo->abajo->comuna = crearComuna("tercera", 10);
-    printf("%s\n", tablero->inicio->derecha->derecha->abajo->abajo->abajo->comuna->nombre);
-
-
-
-
+    iniciarPartida();
     return 0;
 }
+
+
+
