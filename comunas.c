@@ -149,7 +149,7 @@ void agregarComunas(int cantidad, struct matrizComunas*){
     //------------si queremos hacerlo random se debe hacer una función aparte
     
     char comuna[50];
-    for(int i=0; i<cantidad && fgets(comunas,50,comunas) != NULL; i++){
+    for(int i=0; i<cantidad && fgets(comuna,50,comunas) != NULL; i++){
 
         comuna[strcspn(comuna, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
     }
@@ -260,7 +260,23 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 
 /*
 =================================================
-            | Diccionario de Bienes|
+    | Lista enlazada doble de Servicios|
+=================================================
+*/
+
+
+
+/*
+=================================================
+        | Lista simple de Personas|
+=================================================
+*/
+
+
+
+/*
+=================================================
+                    | Comuna |
 =================================================
 */
 

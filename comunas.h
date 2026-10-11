@@ -5,10 +5,24 @@
  */
 void TituloPrincipal();
 
+/*
+=================================================
+                | Funciones utiles|
+=================================================
+*/
+
 /**
- * Función que lee el archivo de "personas"
+ * Función que saca un numero random entre un intervalo
+ * @param int min
+ * @param int max
  */
-int leerPersonas();
+int randomIntervalo(int min, int max);
+
+/*
+=================================================
+        | Funciones Diccionario de Bienes|
+=================================================
+*/
 
 /**
  * Función que lee el archivo de bienes y los mete a un diccionario
@@ -22,12 +36,6 @@ void agregarBienesDiccionario();
  */
 int hashDiccionarioBienes();
 
-/**
- * Función que saca un numero random entre un intervalo
- * @param int min
- * @param int max
- */
-int randomIntervalo(int min, int max);
 
 /**
  * Función uqe imprime el diccionario de bienes
@@ -82,6 +90,12 @@ void añadirBien();
  */
 struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombre);
 
+/*
+=================================================
+    | Funciones de la lista de Personas|
+=================================================
+*/
+
 //lista simple para guardar los habitantes de una comuna
 struct listaPersonas{
     struct nodoListaPersonas* inicio;
@@ -91,6 +105,11 @@ struct nodoListaPersonas{
     struct nodoListaPersonas* sigt;
 };
 
+/*
+=================================================
+        | Funciones de las comunas |
+=================================================
+*/
 
 //struct de las comunas
 struct comuna{
@@ -110,6 +129,20 @@ struct comuna{
  * @param int tamaño del diccionario
  */
 struct comuna* crearComuna(char* nombre, int tamañoDicc);
+
+/**
+ * Función que lee el archivo de comunas y las agrega todas en la matriz 
+ * @param int cantidad a agregar
+ * @param struct de la matriz donde se agregará
+ */
+void agregarComunas(int cantidad, struct matrizComunas*);
+
+
+/*
+=================================================
+    | Funciones de la matriz de comunas|
+=================================================
+*/
 
 //matriz que almacena las comunas
 struct matrizComunas{
@@ -155,9 +188,6 @@ struct matrizComunas* crearMatriz(int tamaño);
  */
 struct nodoMatriz* crearNodoMatriz();
 
-/**
- * Función que lee el archivo de comunas y las agrega todas en la matriz 
- * @param int cantidad a agregar
- * @param struct de la matriz donde se agregará
- */
-void agregarComunas(int cantidad, struct matrizComunas*);
+
+
+
