@@ -94,7 +94,7 @@ int randomIntervalo(int min, int max){
     return nRandom;
 }
 
-int pedir_int(){
+int pedirInt(){
 
     int valor;           
     while(1){
@@ -107,11 +107,71 @@ int pedir_int(){
     return valor;
 }
 
+int pedirEnIntervalo(int min, int max){
+    int n = pedirInt();
+    while(n < min || max < n){
+        
+        if(n < min)
+            printf("Muy poco!! try again");
+        else if(n > max)
+            printf("Demasiado!! try again");
+
+    n = pedirInt();
+    }
+    return n;
+}
+
 /*
 ======================================================================
         | Funciones que leen los archivos con nombres |
 ======================================================================
 */
+
+struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
+    //profe si ves esto, claude me ayudó bastante, tranquilo, no sabía como leer el archivo de manera random
+    FILE* archivo = fopen(nombreArchivo, "r");
+    if(archivo == NULL){
+        perror("No se pudo abrir el archivo");
+        return NULL;
+    }
+
+    //leo TODAS las lineas del archivo a un arreglo que crece solo
+    char** lineas = NULL;
+    int total = 0, capacidad = 0;
+    char buffer[128];
+
+    while(fgets(buffer, sizeof(buffer), archivo) != NULL){
+        buffer[strcspn(buffer, "\r\n")] = '\0';     //le quito el salto de linea
+        if(buffer[0] == '\0') continue;             //ignoro lineas vacias
+
+        if(total == capacidad){
+            capacidad = (capacidad == 0) ? 16 : capacidad * 2;
+            lineas = realloc(lineas, capacidad * sizeof(char*));
+        }
+        lineas[total++] = strdup(buffer);
+    }
+    fclose(archivo);
+
+    if(cantidad > total) cantidad = total;          //no puedo sacar mas de los que hay
+
+    //saco 'cantidad' al azar sin repetir
+    struct listaSimple* lista = crearListaSimple();
+    for(int i = 0; i < cantidad; i++){
+        int j = randomIntervalo(i, total-1);        //escojo uno de los que faltan
+        char* tmp = lineas[i]; lineas[i] = lineas[j]; lineas[j] = tmp;
+
+        //el nodo se queda con este texto (no lo copia), por eso NO lo libero
+        agregarNodoSimple(crearNodoListaSimple(lineas[i]), lista);
+    }
+
+    //libero solo los que NO se escogieron
+    for(int i = cantidad; i < total; i++){
+        free(lineas[i]);
+    }
+    free(lineas);
+
+    return lista;
+}
 
 void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
     FILE* bienes = fopen("bienes", "r");
@@ -149,24 +209,6 @@ int hashDiccionarioBienes(char* texto, int tamaño){
     return hash % tamaño;
 }
 
-/* terminar luego!!!!!!!!!!!!!!!!!!!!!!!!!!1
-void agregarComunas(int cantidad, struct matrizComunas*){
-
-    FILE* comunas = fopen("comunas", "r");
-
-    if(comunas == NULL){
-        perror("No se pudo abrir 'comunas'");
-        return;
-    }
-    
-    //------------si queremos hacerlo random se debe hacer una función aparte
-    
-    char comuna[50];
-    for(int i=0; i<cantidad && fgets(comuna,50,comunas) != NULL; i++){
-
-        comuna[strcspn(comuna, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
-    }
-}*/
 
 /*
 ======================================================================
@@ -287,12 +329,13 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 */
 
 struct listaSimple* crearListaSimple(){
-    struct listaSimple* nuevaLista = calloc(1, sizeof(struct listaSimple*));
+    struct listaSimple* nuevaLista = calloc(1, sizeof(struct listaSimple));
+    nuevaLista->tamaño = 0;
     return nuevaLista;
 }
 
 struct nodoListaSimple* crearNodoListaSimple(char* nombre){
-    struct nodoListaSimple* nuevoNodo = calloc(1, sizeof(struct nodoListaSimple*));
+    struct nodoListaSimple* nuevoNodo = calloc(1, sizeof(struct nodoListaSimple));
     nuevoNodo->nombre = nombre;
     return nuevoNodo;
 }
@@ -300,9 +343,27 @@ struct nodoListaSimple* crearNodoListaSimple(char* nombre){
 void agregarNodoSimple(struct nodoListaSimple* nodo, struct listaSimple* lista){
     nodo->sigt = lista->inicio;
     lista->inicio = nodo;
+    lista->tamaño++;
 }
 
+void eliminarInicioSimple(struct listaSimple* lista){
+    //agarro el que quiero eliminar
+    struct nodoListaSimple* eliminado = lista->inicio;
+    //hago cambio de inicio
+    lista->inicio = eliminado->sigt;
+    //lo borro
+    free(eliminado);
+    lista->tamaño--;
+}
 
+void imprimirListaSimple(struct listaSimple* lista){
+    struct nodoListaSimple* actual = lista->inicio;
+
+    while(actual != NULL){
+        printf("%s\n", actual->nombre);
+        actual = actual->sigt;
+    }
+}
 
 /*
 =================================================
@@ -321,8 +382,10 @@ struct comuna* crearComuna(char* nombre, int numero, int tamañoDicc){
     nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
     agregarBienesDiccionario(tamañoDicc, nueva->diccionario);
 
-    //creo la lista para meter personas
-    nueva->nombre = crearListaSimple();
+    //creo una lista para personas y para los servicios
+    nueva->personas = crearListaSimple();
+    nueva->servicios = crearListaSimple();
+    
 
     return nueva;
 }
@@ -494,15 +557,50 @@ void iniciarPartida(){
 
 /*
 ======================================================================
+                            | Tablero |
+======================================================================
+*/
+
+struct matrizComunas* crearTablero(){
+
+    printf("Para empezar a jugar debes responder unas par de preguntas\n");
+
+    //creo el tablero
+    int tamañoTablero = preguntarDimensión();
+    struct matrizComunas* tablero = crearMatriz(tamañoTablero);
+
+    int tamañoDicc = preguntarCantidadBienes();
+    struct listaSimple* bienesAJugar = extraerRandomArchivo("bienes", tamañoDicc);
+
+}
+
+int preguntarCantidadBienes(){
+    printf("Bueno, ahora necesito la cantidad de bienes a jugar\n");
+    printf("(mínimo 5, máximo 30)");
+
+    int tamañoDicc = pedirEnIntervalo(5, 30);
+    return tamañoDicc;
+}
+
+int preguntarDimensión(){
+    printf("Necesito saber de qué tamaño quieres el tablero: \n");
+    printf("(es una matriz cuadrada entre 3 a 7 de largo/ancho)\n");
+
+    int tamañoTablero = pedirEnIntervalo(3,7);
+    return tamañoTablero;
+}
+
+
+/*
+======================================================================
                             | Main |
 ======================================================================
 */
 int main(){
     srand(time(NULL));
 
-    //struct matrizComunas* tablero = crearMatriz(3);
-
-    iniciarPartida();
+    struct listaSimple* bienesAJugar = extraerRandomArchivo("bienes", 10);
+    imprimirListaSimple(bienesAJugar);
     return 0;
 }
 

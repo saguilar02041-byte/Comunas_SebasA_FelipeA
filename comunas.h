@@ -12,6 +12,14 @@ void TituloPrincipal();
 */
 
 /**
+ * Función que saca nombres random de un archivo
+ * @param char* nombre del archivo
+ * @param int cantidad de elementos a sacar
+ * @return lista simple con los elementos, NULL no hay archivo
+ */
+struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad);
+
+/**
  * Función que saca un numero random entre un intervalo
  * @param int min
  * @param int max
@@ -23,7 +31,13 @@ int randomIntervalo(int min, int max);
 * Función que pide un int al usuario
 * @return int
 */
-int pedir_int();
+int pedirInt();
+
+/**
+ * Función que pide un valor entre un minimo y un maximo
+ */
+int pedirEnIntervalo(int min, int max);
+
 
 /*
 =================================================
@@ -106,6 +120,7 @@ struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombr
 //lista simple para guardar los habitantes de una comuna y los servicios
 struct listaSimple{
     struct nodoListaSimple* inicio;
+    int tamaño;
 };
 struct nodoListaSimple{
     char* nombre;
@@ -132,6 +147,11 @@ void agregarNodoSimple(struct nodoListaSimple* nodo, struct listaSimple* lista);
  */
 void eliminarInicioSimple(struct listaSimple* lista);
 
+/**
+ * Función que imprime una lista simple
+ */
+void imprimirListaSimple(struct listaSimple* lista);
+
 /*
 =================================================
     | Funciones de la lista de servicios|
@@ -156,6 +176,8 @@ struct comuna{
     double satisfaccion;
 
     struct DiccionarioBienes* diccionario;
+    struct listaSimple* servicios;
+    struct listaSimple* personas;
 
 };
 
@@ -164,14 +186,12 @@ struct comuna{
  * @param nombre
  * @param int tamaño del diccionario
  */
-struct comuna* crearComuna(char* nombre, int tamañoDicc);
+struct comuna* crearComuna(char* nombre,int numero, int tamañoDicc);
 
 /**
  * Función que lee el archivo de comunas y las agrega todas en la matriz 
- * @param int cantidad a agregar
  * @param struct de la matriz donde se agregará
  */
-void agregarComunas(int cantidad, struct matrizComunas*);
 
 
 /*
@@ -224,6 +244,27 @@ struct matrizComunas* crearMatriz(int tamaño);
  */
 struct nodoMatriz* crearNodoMatriz();
 
+/*
+=================================================
+        | Funciones del tablero |
+=================================================
+*/
 
+/**
+ * Función que pregunta todo para crear un tablero y empezar a jugar
+ * @return matriz con todas las comunas ya puestas
+ */
+struct matrizComunas* crearTablero();
 
+/**
+ * Función que pregunta al usario el tamaño del tablero
+ * @return int
+ */
+int preguntarDimensión();
+
+/**
+ * Función que pregunta al usario cuantos bienes quiere utilizar en el juego
+ * @return int
+ */
+int preguntarCantidadBienes();
 
