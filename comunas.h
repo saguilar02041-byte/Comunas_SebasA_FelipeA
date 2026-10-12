@@ -46,8 +46,7 @@ int pedirEnIntervalo(int min, int max);
 */
 
 /**
- * Función que lee el archivo de bienes y los mete a un diccionario
- * @param int cantidad de bienes a agregar
+ * Función que le agrega los bienes a 1 diccionario
  */
 void agregarBienesDiccionario();
 
@@ -183,10 +182,8 @@ struct comuna{
 
 /**
  * Función para crear una comuna
- * @param nombre
- * @param int tamaño del diccionario
  */
-struct comuna* crearComuna(char* nombre,int numero, int tamañoDicc);
+struct comuna* crearComuna();
 
 /**
  * Función que lee el archivo de comunas y las agrega todas en la matriz 
@@ -244,6 +241,11 @@ struct matrizComunas* crearMatriz(int tamaño);
  */
 struct nodoMatriz* crearNodoMatriz();
 
+/**
+ * Función que ayuda a recorrer la matriz, retorna el nodo de la derecha, si no hay se devuelve toda la fila y retorna el de abajo
+ */
+struct nodoMatriz* recorrerMatriz(struct nodoMatriz*);
+
 /*
 =================================================
         | Funciones del tablero |
@@ -268,3 +270,7 @@ int preguntarDimensión();
  */
 int preguntarCantidadBienes();
 
+/**
+ * Función que le crea y agrega un diccionario a todas las comunas
+ */
+void meterDiccionarios(struct listaSimple* bienesDisponibles, struct matrizComunas* tablero);

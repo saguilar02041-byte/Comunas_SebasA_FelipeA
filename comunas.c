@@ -112,9 +112,9 @@ int pedirEnIntervalo(int min, int max){
     while(n < min || max < n){
         
         if(n < min)
-            printf("Muy poco!! try again");
+            printf("Muy poco!! try again\n");
         else if(n > max)
-            printf("Demasiado!! try again");
+            printf("Demasiado!! try again\n");
 
     n = pedirInt();
     }
@@ -173,21 +173,13 @@ struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
     return lista;
 }
 
-void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionario){
-    FILE* bienes = fopen("bienes", "r");
+//diccionario de bienes
 
-    if(bienes == NULL){
-        perror("No se pudo abrir 'bienes'");
-        return;
-    }
-    
-    //------------si queremos hacerlo random se debe hacer una función aparte
-    
-    char bien[30];
-    for(int i=0; i<cantidad && fgets(bien,30,bienes) != NULL; i++){
-        
-        bien[strcspn(bien, "\n")] = '\0';   //para que en vez de un cambio de linea tenga \0
-        convertirMinusculas(bien);          //lo convertiremos a minusculas
+void agregarBienesDiccionario(struct listaSimple* bienesDisponibles, struct DiccionarioBienes* diccionario){
+
+    struct nodoListaSimple* actual = bienesDisponibles->inicio;
+    while(actual != NULL){
+        char* bien = actual->nombre;
 
         int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
@@ -196,9 +188,9 @@ void agregarBienesDiccionario(int cantidad, struct DiccionarioBienes* diccionari
 
         struct nodoBienes* nodoBien = crearNodoBien(cantBien, bien);        //creo su nodo
         añadirBien(nodoBien, posicion, diccionario);                        //lo añado
+    
+        actual = actual->sigt;
     }
-
-    fclose(bienes);
 }
 
 int hashDiccionarioBienes(char* texto, int tamaño){
@@ -371,22 +363,8 @@ void imprimirListaSimple(struct listaSimple* lista){
 =================================================
 */
 
-struct comuna* crearComuna(char* nombre, int numero, int tamañoDicc){
+struct comuna* crearComuna(){
     struct comuna* nueva = calloc(1, sizeof(struct comuna));
-    
-    //le pongo el nombre
-    nueva->nombre = nombre;
-    nueva->numero = numero;
-
-    //creo el diccionario
-    nueva->diccionario = crearDiccionarioBienes(tamañoDicc);
-    agregarBienesDiccionario(tamañoDicc, nueva->diccionario);
-
-    //creo una lista para personas y para los servicios
-    nueva->personas = crearListaSimple();
-    nueva->servicios = crearListaSimple();
-    
-
     return nueva;
 }
 
@@ -468,6 +446,7 @@ struct matrizComunas* crearMatriz(int tamaño){
 
 struct nodoMatriz* crearNodoMatriz(){
     struct nodoMatriz* nuevoNodo = calloc(1, sizeof(struct nodoMatriz));
+    nuevoNodo->comuna = crearComuna();
     return nuevoNodo;
 }
 
@@ -508,6 +487,23 @@ int enlazarNodosAbajo(struct nodoMatriz* nodo){
     abajo->derecha = abajoDerecha;
     abajoDerecha->izquierda = abajo;
     return 1;
+}
+
+struct nodoMatriz* recorrerMatriz(struct nodoMatriz* actual){
+    struct nodoMatriz* sigt = actual->derecha;
+
+    //si hay uno a la derecha entonces no pasa nada
+    if(sigt != NULL)
+        return sigt;
+
+    //sino hay que devolverse
+    sigt = actual;
+    while(1){
+        sigt = sigt->izquierda;
+
+        if(sigt->izquierda == NULL)
+            return sigt->abajo;
+    }   
 }
 
 /*
@@ -569,17 +565,38 @@ struct matrizComunas* crearTablero(){
     int tamañoTablero = preguntarDimensión();
     struct matrizComunas* tablero = crearMatriz(tamañoTablero);
 
+    //le meto los diccionarios de bienes a cada comuna
     int tamañoDicc = preguntarCantidadBienes();
     struct listaSimple* bienesAJugar = extraerRandomArchivo("bienes", tamañoDicc);
+    meterDiccionarios(bienesAJugar, tablero);
 
+    return tablero;
 }
 
 int preguntarCantidadBienes(){
     printf("Bueno, ahora necesito la cantidad de bienes a jugar\n");
-    printf("(mínimo 5, máximo 30)");
+    printf("(mínimo 5, máximo 30)\n");
 
     int tamañoDicc = pedirEnIntervalo(5, 30);
     return tamañoDicc;
+}
+
+void meterDiccionarios(struct listaSimple* bienesDisponibles, struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
+
+    int i=0;
+    int tamaño = tablero->tamaño;
+    while(i < tamaño*tamaño){
+        struct comuna* comunaActual = actual->comuna;
+        
+        //creo el diccionario y agrego los bienes
+        comunaActual->diccionario = crearDiccionarioBienes(bienesDisponibles->tamaño);
+        agregarBienesDiccionario(bienesDisponibles, comunaActual->diccionario);
+
+        //paso al siguiente
+        actual = recorrerMatriz(actual);
+        i++;
+    }
 }
 
 int preguntarDimensión(){
@@ -599,8 +616,9 @@ int preguntarDimensión(){
 int main(){
     srand(time(NULL));
 
-    struct listaSimple* bienesAJugar = extraerRandomArchivo("bienes", 10);
-    imprimirListaSimple(bienesAJugar);
+    struct matrizComunas* tablero = crearTablero();
+    imprimirDiccionarioBienes(tablero->inicio->comuna->diccionario);
+
     return 0;
 }
 
