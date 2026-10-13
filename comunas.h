@@ -320,6 +320,39 @@ void calcularIndices(struct nodoMatriz* nodo);
 
 void calcularIndicesTablero(struct matrizComunas* tablero);
 
+/*
+=================================================
+    | Funciones para imprimir el tablero |
+=================================================
+*/
+
+/**
+ * Función que imprime el resumen del tablero
+ */
+void imprimirResumenTablero(struct matrizComunas* tablero);
+
+/**
+ * Funciçon qu eimprime una linea del tablero
+ */
+void imprimirLineaFila(struct nodoMatriz* inicioFila, int linea);
+
+/**
+ * Función que imprime todo el tablero
+ */
+void imprimirTablero(struct matrizComunas* tablero);
+
+void imprimirNumero(struct comuna* comuna);
+void imprimirSatisfaccion(struct comuna* comuna);
+void imprimirNecesidad(struct comuna* comuna);
+void imprimirRelleno();
+
+
+
+
+
+
+
+
 
 
 

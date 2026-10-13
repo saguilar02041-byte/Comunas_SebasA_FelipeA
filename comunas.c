@@ -526,23 +526,64 @@ struct nodoMatriz* recorrerMatriz(struct nodoMatriz* actual){
                             | Imrpimir Matriz |
 ======================================================================
 */
-void imprimirNumero(){
 
-
-}
-void imprimirSatis(){
-
-
-}
-
-void imprimirNece(){
-
-
+void imprimirResumenTablero(struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
+    for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
+        struct comuna* c = actual->comuna;
+        printf("%02d %-14s personas=%3d  necesidad=%5.1f  satisfaccion=%5.1f\n",
+                c->numero, c->nombre, c->personas->tamaño, c->necesidad, c->satisfaccion);
+        actual = recorrerMatriz(actual);
+    }
 }
 
-void imprimirMatriz(struct matrizComunas* matriz){
+void imprimirNumero(struct comuna* comuna){
+//╔══00══╗
+    printf(" ╔══%02d══╗ ", comuna->numero);
+}
 
+void imprimirSatisfaccion(struct comuna* comuna){
+//╠S:99.9║
+    printf(" ╠S%5.1f║ ", comuna->satisfaccion);
+}
 
+void imprimirNecesidad(struct comuna* comuna){
+//╠N:99.9║
+    printf(" ╠N%5.1f║ ", comuna->necesidad);
+}
+
+void imprimirRelleno(){
+//╚══════╝
+    printf(" ╚══════╝ ");
+}
+
+void imprimirLineaFila(struct nodoMatriz* inicioFila, int linea){
+    struct nodoMatriz* actual = inicioFila;
+
+    while(actual != NULL){              //avanzo a la derecha hasta que se acabe la fila
+        if(linea == 0)
+            imprimirNumero(actual->comuna);
+        else if(linea == 1)
+            imprimirSatisfaccion(actual->comuna);
+        else if(linea == 2)
+            imprimirNecesidad(actual->comuna);
+        else
+            imprimirRelleno();
+
+        actual = actual->derecha;
+    }
+    printf("\n");                       //termino la linea
+}
+
+void imprimirTablero(struct matrizComunas* tablero){
+    struct nodoMatriz* inicioFila = tablero->inicio;
+
+    while(inicioFila != NULL){
+        for(int linea = 0; linea < 4; linea++){
+            imprimirLineaFila(inicioFila, linea);
+        }
+        inicioFila = inicioFila->abajo;     //bajo a la siguiente fila (despues de la ultima es NULL)
+    }
 }
 
 /*
@@ -612,7 +653,7 @@ struct matrizComunas* crearTablero(){
 }
 
 int preguntarCantidadBienes(){
-    printf("Bueno, ahora necesito la cantidad de bienes a jugar\n");
+    printf("\nBueno, ahora necesito la cantidad de bienes a jugar\n");
     printf("(mínimo 5, máximo 30)\n");
 
     int tamañoDicc = pedirEnIntervalo(5, 30);
@@ -620,7 +661,7 @@ int preguntarCantidadBienes(){
 }
 
 int preguntarCantidadServicios(){
-    printf("Ahora necesito la cantidad de servicios a jugar\n");
+    printf("\nAhora necesito la cantidad de servicios a jugar\n");
     printf("(mínimo 5, máximo 30)\n");
 
     int tamañoDicc = pedirEnIntervalo(5, 30);
@@ -640,7 +681,7 @@ void meterNumeros(struct matrizComunas* tablero){
 
         //si es el ultimo de la linea entonces paso de 00 a 10 a 20, como sea
         if(actual->derecha == NULL)
-            numero = numero - tablero->tamaño + 10;
+            numero = numero - tablero->tamaño + 11;
         //sino solo se suma 1
         else
             numero++;
@@ -741,7 +782,7 @@ void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas
 }
 
 int preguntarDimensión(){
-    printf("Necesito saber de qué tamaño quieres el tablero: \n");
+    printf("\nNecesito saber de qué tamaño quieres el tablero: \n");
     printf("(es una matriz cuadrada entre 3 a 7 de largo/ancho)\n");
 
     int tamañoTablero = pedirEnIntervalo(3,7);
@@ -851,7 +892,7 @@ int main(){
     srand(time(NULL));
 
     struct matrizComunas* tablero = crearTablero();
-    imprimirDiccionarioBienes(tablero->inicio->comuna->diccionarioServicios);
+    imprimirTablero(tablero);
 
     return 0;
 }
