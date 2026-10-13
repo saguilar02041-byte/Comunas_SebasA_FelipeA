@@ -317,10 +317,10 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
             printf(" - %s %d , max:%d\n", bien->nombre, bien->cantidad, bien->maximo);
             bien = bien->sigt;
         }
-
-        printf("\n");
         actual = actual->sigt;
     }
+    printf("\n");
+
 }
 
 /*
@@ -885,11 +885,14 @@ void calcularIndicesTablero(struct matrizComunas* tablero){
 
 void imprimirPersonas(struct listaSimple* personas, char* nombre){
     struct nodoListaSimple* actual = personas->inicio;
-    printf("Personas de la comuna %s :", nombre);
+    printf("\nPersonas de la comuna %s :\n", nombre);
 
     int i=0;
     while(actual != NULL){
         printf("%s\t", actual->nombre);
+
+        if(strlen(actual->nombre) < 8)
+            printf("\t");
 
         if(i == 6){
             printf("\n");
@@ -897,20 +900,22 @@ void imprimirPersonas(struct listaSimple* personas, char* nombre){
         }
 
         i++;
+        actual = actual->sigt;
     }
+    printf("\n");
 }
 
 void imprimirComuna(struct nodoMatriz* nodo){
 
     struct comuna* comuna = nodo->comuna;
 
-    printf("======================================================================\n");
+    printf("\n======================================================================\n");
     printf("Estás en la comuna %02d %s\n", comuna->numero, comuna->nombre);
     printf("\nSatisfacción : %5.1f \nNecesidad : %5.1f \n", comuna->satisfaccion, comuna->necesidad);
 
     while(1){
         printf(
-            "¿Qué quieres hacer?\n"
+            "\n¿Qué quieres hacer?\n"
             "0. Revisar Bienes\n"
             "1. Revisar Servicios\n"
             "2. Ver Personas\n"
@@ -986,11 +991,24 @@ struct nodoMatriz* buscarComuna(struct matrizComunas* tablero){
             continue;
         }
 
-        break;
+        int i= pos%10;
+        int j= pos/10;
+        return encontrarNodoMatriz(i,j,tablero);
     }
 }
 
+struct nodoMatriz* encontrarNodoMatriz(int i, int j, struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
 
+    for(int n=0; n < i; n++){
+        actual = actual->derecha;
+    }
+    for(int m=0; m < j; m++){
+        actual = actual->abajo;
+    }
+
+    return actual;
+}
 
 /*
 ======================================================================
@@ -1012,6 +1030,8 @@ int main(){
         imprimirComuna(actual);
     }
 
+
+    //calcularIndicesTablero(tablero);
     return 0;
 }
 

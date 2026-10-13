@@ -352,6 +352,15 @@ void imprimirComuna(struct nodoMatriz* nodo);
 struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* tablero);
 struct nodoMatriz* buscarComuna(struct matrizComunas* tablero);
 
+/**
+ * Función que recorre la matriz y retorna el nodo de matriz en la posición i,j
+ * @param int i
+ * @param int j
+ * @param tablero
+ */
+struct nodoMatriz* encontrarNodoMatriz(int i, int j, struct matrizComunas* tablero);
+
+
 
 
 
