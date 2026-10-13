@@ -304,14 +304,17 @@ struct nodoBienes* buscarBien(struct DiccionarioBienes* diccionario, char* nombr
 void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
     struct nodoDic* actual = diccionario->inicio;
 
+    printf(
+        "\n"
+    );
+
     //recorro cada nodo del diccionario
     for(int i=0; i < diccionario->tamaño; i++){
-        printf("%d. ", i);
         
         //busco todos lo que cayeron en la lista de dicho nodo
         struct nodoBienes* bien = actual->bienes;
         while(bien != NULL){
-            printf("%s - ", bien->nombre);
+            printf(" - %s %d , max:%d\n", bien->nombre, bien->cantidad, bien->maximo);
             bien = bien->sigt;
         }
 
@@ -322,16 +325,7 @@ void imprimirDiccionarioBienes(struct DiccionarioBienes* diccionario){
 
 /*
 =================================================
-    | Lista enlazada doble de Servicios|
-=================================================
-*/
-
-
-
-
-/*
-=================================================
-        | Lista simple de Personas|
+                | Lista simple |
 =================================================
 */
 
@@ -885,6 +879,121 @@ void calcularIndicesTablero(struct matrizComunas* tablero){
 
 /*
 ======================================================================
+                        | Menú de comuna |
+======================================================================
+*/
+
+void imprimirPersonas(struct listaSimple* personas, char* nombre){
+    struct nodoListaSimple* actual = personas->inicio;
+    printf("Personas de la comuna %s :", nombre);
+
+    int i=0;
+    while(actual != NULL){
+        printf("%s\t", actual->nombre);
+
+        if(i == 6){
+            printf("\n");
+            i = -1;
+        }
+
+        i++;
+    }
+}
+
+void imprimirComuna(struct nodoMatriz* nodo){
+
+    struct comuna* comuna = nodo->comuna;
+
+    printf("======================================================================\n");
+    printf("Estás en la comuna %02d %s\n", comuna->numero, comuna->nombre);
+    printf("\nSatisfacción : %5.1f \nNecesidad : %5.1f \n", comuna->satisfaccion, comuna->necesidad);
+
+    while(1){
+        printf(
+            "¿Qué quieres hacer?\n"
+            "0. Revisar Bienes\n"
+            "1. Revisar Servicios\n"
+            "2. Ver Personas\n"
+            "3. Ver otra comuna\n"
+        );
+        int opcion = pedirEnIntervalo(0,3);
+
+        if(opcion == 0){
+            printf("\nBienes:");
+            imprimirDiccionarioBienes(comuna->diccionarioBienes);
+        }else if(opcion == 1){
+            printf("\nServicios:");
+            imprimirDiccionarioBienes(comuna->diccionarioServicios);
+        }else if(opcion == 2){
+            imprimirPersonas(comuna->personas, comuna->nombre);
+        }
+        else
+            return;
+    }
+    printf("======================================================================\n");
+}
+
+struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* tablero){
+    printf("\nEstás en la comuna %d\n", actual->comuna->numero);
+    printf(
+        "Tienes dos opciones:\n"
+        "0. Escribir el numero de la comuna\n"
+        "1. Moverte hacia cualquier lado (arriba,abajo,izq,der)\n"
+    );
+
+    int opcion = pedirEnIntervalo(0,1);
+
+    if(opcion == 0){
+        return buscarComuna(tablero);
+    }else{
+        printf(
+            "¿Hacia dónde te quieres mover?\n"
+            "0. Arriba\n"
+            "1. Abajo\n"
+            "2. Derecha\n"
+            "3. Izquierda\n"
+        );
+        struct nodoMatriz* elegido;
+        
+        while(1){
+            opcion = pedirEnIntervalo(0,3);
+        
+            if(opcion == 0)elegido = actual->arriba;
+            else if(opcion == 1)elegido = actual->abajo;
+            else if(opcion == 2)elegido = actual->derecha;
+            else elegido = actual->izquierda;
+        
+            if(elegido == NULL){
+                printf("No existe, intente denuevo\n");
+                continue;
+            }
+
+            return elegido;
+        }
+    }
+}
+
+struct nodoMatriz* buscarComuna(struct matrizComunas* tablero){
+    printf("\nDime el numero de la comuna que quieres\n");
+
+    int tamaño = tablero->tamaño;
+    int pos = 0;
+    while(1){
+        pos = pedirInt();
+
+        if(pos%10 >= tamaño || pos/10 >= tamaño){
+            printf("Esa posición no existe!!");
+            continue;
+        }
+
+        break;
+    }
+}
+
+
+
+/*
+======================================================================
                             | Main |
 ======================================================================
 */
@@ -892,7 +1001,16 @@ int main(){
     srand(time(NULL));
 
     struct matrizComunas* tablero = crearTablero();
-    imprimirTablero(tablero);
+
+    struct nodoMatriz* actual = tablero->inicio;
+
+    while(1){
+        imprimirTablero(tablero);
+
+        actual = pedirComuna(actual, tablero);
+
+        imprimirComuna(actual);
+    }
 
     return 0;
 }

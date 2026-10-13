@@ -346,6 +346,12 @@ void imprimirSatisfaccion(struct comuna* comuna);
 void imprimirNecesidad(struct comuna* comuna);
 void imprimirRelleno();
 
+void imprimirPersonas(struct listaSimple* personas, char* nombre);
+void imprimirComuna(struct nodoMatriz* nodo);
+
+struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* tablero);
+struct nodoMatriz* buscarComuna(struct matrizComunas* tablero);
+
 
 
 
