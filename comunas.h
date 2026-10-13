@@ -73,6 +73,8 @@ struct nodoDic{
 };
 struct nodoBienes{
     int cantidad;
+    int maximo;
+
     char* nombre;
     struct nodoBienes* sigt;
 };
@@ -174,8 +176,9 @@ struct comuna{
     double necesidad;
     double satisfaccion;
 
-    struct DiccionarioBienes* diccionario;
-    struct listaSimple* servicios;
+    struct DiccionarioBienes* diccionarioBienes;
+    struct DiccionarioBienes* diccionarioServicios;
+
     struct listaSimple* personas;
 
 };
@@ -201,6 +204,9 @@ struct comuna* crearComuna();
 struct matrizComunas{
     struct nodoMatriz* inicio;
     int tamaño;
+    
+    struct listaSimple* bienesDisponibles;
+    struct listaSimple* serviciosDisponibles;
 };
 //nodos de la matriz de comunas
 struct nodoMatriz{
@@ -271,6 +277,51 @@ int preguntarDimensión();
 int preguntarCantidadBienes();
 
 /**
- * Función que le crea y agrega un diccionario a todas las comunas
+ * Función que pregunta al usuario cuantos servicios quiere utilizar en el juego
+ * @return int
  */
-void meterDiccionarios(struct listaSimple* bienesDisponibles, struct matrizComunas* tablero);
+int preguntarCantidadServicios();
+
+/**
+ * Función que le crea y agrega los diccionarios a todas las comunas
+ */
+void meterDiccionarios(struct listaSimple* serviciosDisponibles, struct listaSimple* bienesDisponibles, struct matrizComunas* tablero);
+
+/**
+ * Función que le agrega un numero a cada comuna
+ */
+void meterNumeros(struct matrizComunas* tablero);
+
+/**
+ * Función que le da nombres a todas las comunas
+ */
+void meterNombres(struct listaSimple* nombresComunas, struct matrizComunas* tablero);
+
+/**
+ * Función que le mete todas las personas a un tablero
+ */
+void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas* tablero);
+
+/*
+=================================================
+    | Funciones que ayudan a hacer calculos |
+=================================================
+*/
+
+void sumarFaltantes(struct DiccionarioBienes* diccionario, int* faltante, int* maximo);
+
+double calcularNecesidad(struct comuna* comuna);
+
+void sumarVecino(struct nodoMatriz* vecino, double* suma, int* cuenta);
+
+void sumarVecinos(struct nodoMatriz* nodo, double* suma, int* cuenta);
+
+void calcularIndices(struct nodoMatriz* nodo);
+
+void calcularIndicesTablero(struct matrizComunas* tablero);
+
+
+
+
+
+

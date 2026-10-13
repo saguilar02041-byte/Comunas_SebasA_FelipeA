@@ -135,47 +135,58 @@ struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
         return NULL;
     }
 
-    //leo TODAS las lineas del archivo a un arreglo que crece solo
-    char** lineas = NULL;
-    int total = 0, capacidad = 0;
+    //paso todas las lineas del archivo a una lista simple
+    struct listaSimple* todas = crearListaSimple();
     char buffer[128];
-
     while(fgets(buffer, sizeof(buffer), archivo) != NULL){
-        buffer[strcspn(buffer, "\r\n")] = '\0';     //le quito el salto de linea
-        if(buffer[0] == '\0') continue;             //ignoro lineas vacias
+        buffer[strcspn(buffer, "\r\n")] = '\0';
+        if(buffer[0] == '\0') continue;
 
-        if(total == capacidad){
-            capacidad = (capacidad == 0) ? 16 : capacidad * 2;
-            lineas = realloc(lineas, capacidad * sizeof(char*));
-        }
-        lineas[total++] = strdup(buffer);
+        agregarNodoSimple(crearNodoListaSimple(strdup(buffer)), todas);
     }
     fclose(archivo);
 
-    if(cantidad > total) cantidad = total;          //no puedo sacar mas de los que hay
+    if(cantidad > todas->tamaño) cantidad = todas->tamaño;
 
-    //saco 'cantidad' al azar sin repetir
-    struct listaSimple* lista = crearListaSimple();
+    //saco 'cantidad' nodos al azar de 'todas' y los paso a 'escogidos'
+    struct listaSimple* escogidos = crearListaSimple();
     for(int i = 0; i < cantidad; i++){
-        int j = randomIntervalo(i, total-1);        //escojo uno de los que faltan
-        char* tmp = lineas[i]; lineas[i] = lineas[j]; lineas[j] = tmp;
+        int pos = randomIntervalo(0, todas->tamaño - 1);
 
-        //el nodo se queda con este texto (no lo copia), por eso NO lo libero
-        agregarNodoSimple(crearNodoListaSimple(lineas[i]), lista);
+        //busco el nodo en esa posicion (y el anterior, para poder desenlazarlo)
+        struct nodoListaSimple* anterior = NULL;
+        struct nodoListaSimple* actual = todas->inicio;
+        for(int j = 0; j < pos; j++){
+            anterior = actual;
+            actual = actual->sigt;
+        }
+
+        //lo desenlazo de 'todas'
+        if(anterior == NULL)
+            todas->inicio = actual->sigt;
+        else
+            anterior->sigt = actual->sigt;
+        todas->tamaño--;
+
+        //y lo agrego a 'escogidos' (el nodo se mueve, no se copia)
+        agregarNodoSimple(actual, escogidos);
     }
 
-    //libero solo los que NO se escogieron
-    for(int i = cantidad; i < total; i++){
-        free(lineas[i]);
+    //libero lo que no se escogio
+    while(todas->inicio != NULL){
+        struct nodoListaSimple* sig = todas->inicio->sigt;
+        free(todas->inicio->nombre);
+        free(todas->inicio);
+        todas->inicio = sig;
     }
-    free(lineas);
+    free(todas);
 
-    return lista;
+    return escogidos;
 }
 
 //diccionario de bienes
 
-void agregarBienesDiccionario(struct listaSimple* bienesDisponibles, struct DiccionarioBienes* diccionario){
+void agregarBienesDiccionario(struct listaSimple* bienesDisponibles, struct DiccionarioBienes* diccionario, int personas){
 
     struct nodoListaSimple* actual = bienesDisponibles->inicio;
     while(actual != NULL){
@@ -183,12 +194,16 @@ void agregarBienesDiccionario(struct listaSimple* bienesDisponibles, struct Dicc
 
         int posicion = hashDiccionarioBienes(bien, diccionario->tamaño);    //calculo su posicion
 
+        //calculo su maximo
+        int maximo = personas * randomIntervalo(1,3);
+
         //saco una cantidad random
-        int cantBien = randomIntervalo(3,15);
+        int cantBien = randomIntervalo(maximo * 4/10, maximo * 8/10);
 
         struct nodoBienes* nodoBien = crearNodoBien(cantBien, bien);        //creo su nodo
         añadirBien(nodoBien, posicion, diccionario);                        //lo añado
-    
+        nodoBien->maximo = maximo;                                          //añado el maximo
+        
         actual = actual->sigt;
     }
 }
@@ -565,10 +580,33 @@ struct matrizComunas* crearTablero(){
     int tamañoTablero = preguntarDimensión();
     struct matrizComunas* tablero = crearMatriz(tamañoTablero);
 
-    //le meto los diccionarios de bienes a cada comuna
+    //le meto un nombre a cada comuna
+    struct listaSimple* nombresComunas = extraerRandomArchivo("comunas", tablero->tamaño * tablero->tamaño);
+    meterNombres(nombresComunas, tablero);
+
+    //le meto un numero a cada comuna
+    meterNumeros(tablero);
+
+    //le meto las personas a cada comuna
+    struct listaSimple* personasAJugar = extraerRandomArchivo("personas", 500); 
+    meterPersonas(personasAJugar, tablero);
+
+    //saco los bienes
     int tamañoDicc = preguntarCantidadBienes();
     struct listaSimple* bienesAJugar = extraerRandomArchivo("bienes", tamañoDicc);
-    meterDiccionarios(bienesAJugar, tablero);
+
+    //saco los servicios
+    tamañoDicc = preguntarCantidadServicios();
+    struct listaSimple* serviciosAJugar = extraerRandomArchivo("servicios", tamañoDicc);    
+    
+    //meto los dos a cada comuna
+    meterDiccionarios(serviciosAJugar, bienesAJugar, tablero);
+
+    //guardo los bienes y servicios disponibles
+    tablero->bienesDisponibles = bienesAJugar;
+    tablero->serviciosDisponibles = serviciosAJugar;
+
+    calcularIndicesTablero(tablero);
 
     return tablero;
 }
@@ -581,7 +619,38 @@ int preguntarCantidadBienes(){
     return tamañoDicc;
 }
 
-void meterDiccionarios(struct listaSimple* bienesDisponibles, struct matrizComunas* tablero){
+int preguntarCantidadServicios(){
+    printf("Ahora necesito la cantidad de servicios a jugar\n");
+    printf("(mínimo 5, máximo 30)\n");
+
+    int tamañoDicc = pedirEnIntervalo(5, 30);
+    return tamañoDicc;
+}
+
+void meterNumeros(struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
+
+    int numero = 0;
+    int tamaño = tablero->tamaño * tablero->tamaño;
+
+    for(int i=0; i < tamaño; i++){
+        struct comuna* comunaActual = actual->comuna;
+        
+        comunaActual->numero = numero;      //le pongo el numero
+
+        //si es el ultimo de la linea entonces paso de 00 a 10 a 20, como sea
+        if(actual->derecha == NULL)
+            numero = numero - tablero->tamaño + 10;
+        //sino solo se suma 1
+        else
+            numero++;
+
+        actual = recorrerMatriz(actual);
+    }
+}
+
+
+void meterDiccionarios(struct listaSimple* serviciosDisponibles, struct listaSimple* bienesDisponibles, struct matrizComunas* tablero){
     struct nodoMatriz* actual = tablero->inicio;
 
     int i=0;
@@ -590,13 +659,85 @@ void meterDiccionarios(struct listaSimple* bienesDisponibles, struct matrizComun
         struct comuna* comunaActual = actual->comuna;
         
         //creo el diccionario y agrego los bienes
-        comunaActual->diccionario = crearDiccionarioBienes(bienesDisponibles->tamaño);
-        agregarBienesDiccionario(bienesDisponibles, comunaActual->diccionario);
+        comunaActual->diccionarioBienes = crearDiccionarioBienes(bienesDisponibles->tamaño);
+        agregarBienesDiccionario(bienesDisponibles, comunaActual->diccionarioBienes, comunaActual->personas->tamaño);
+
+        //creo el diccionario y agrego los servicios
+        comunaActual->diccionarioServicios = crearDiccionarioBienes(serviciosDisponibles->tamaño);
+        agregarBienesDiccionario(serviciosDisponibles, comunaActual->diccionarioServicios, comunaActual->personas->tamaño);
 
         //paso al siguiente
         actual = recorrerMatriz(actual);
         i++;
     }
+}
+
+void meterNombres(struct listaSimple* nombresComunas, struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
+
+    int i=0;
+    int tamaño = tablero->tamaño;
+    while(i < tamaño*tamaño){
+        struct comuna* comunaActual = actual->comuna;
+
+        //le pongo el primer nombre de la lista
+        comunaActual->nombre = nombresComunas->inicio->nombre;
+        //quito ese primer nombre
+        eliminarInicioSimple(nombresComunas);
+
+        actual = recorrerMatriz(actual);
+        i++;
+    }
+}
+
+void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas* tablero){
+    int totalComunas = tablero->tamaño * tablero->tamaño;
+    int total = personasDisponibles->tamaño;
+
+    int base = total / totalComunas;        //lo que le tocaria a cada una si fuera parejo
+    int resto = total % totalComunas;       //lo que sobra de esa division
+    int desviacionMax = base * 6 / 10;      //hasta 60% arriba o abajo del promedio
+
+    int compensacion = 0;                   //lo que una comuna gana/pierde respecto a su pareja
+    struct nodoMatriz* actual = tablero->inicio;
+
+    for(int i = 0; i < totalComunas; i++){
+        int cantidad;
+
+        if(i % 2 == 0 && i < totalComunas-1){
+            //primera de la pareja: se desvia del promedio (para arriba o para abajo)
+            compensacion = randomIntervalo(-desviacionMax, desviacionMax);
+            cantidad = base + compensacion;
+        }
+        else if(i % 2 == 1){
+            //segunda de la pareja: recibe lo contrario, así la pareja suma 2*base
+            cantidad = base - compensacion;
+        }
+        else{
+            //si son impares, la última se queda sola con el promedio
+            cantidad = base;
+        }
+
+        if(i < resto) cantidad++;           //reparto lo que sobro de la division
+
+        //le paso 'cantidad' personas
+        struct comuna* comunaActual = actual->comuna;
+        comunaActual->personas = crearListaSimple();
+
+        for(int k = 0; k < cantidad && personasDisponibles->inicio != NULL; k++){
+            struct nodoListaSimple* persona = personasDisponibles->inicio;
+
+            //la saco de la lista general
+            personasDisponibles->inicio = persona->sigt;
+            personasDisponibles->tamaño--;
+
+            //y la meto en la comuna
+            agregarNodoSimple(persona, comunaActual->personas);
+        }
+
+        actual = recorrerMatriz(actual);
+    }
+
 }
 
 int preguntarDimensión(){
@@ -607,6 +748,99 @@ int preguntarDimensión(){
     return tamañoTablero;
 }
 
+/*
+======================================================================
+                            | Cálculos |
+======================================================================
+*/
+
+#define NECESIDAD_MIN 5.0       //siempre hay necesidades extra: nunca llega a 0
+#define NECESIDAD_MAX 99.0      //nunca llega a 100
+
+#define PESO_PROPIA   0.55      //que tan bien estoy yo
+#define PESO_VECINOS  0.25      //que tan bien estan los de alrededor
+#define PESO_EQUIDAD  0.20      //que tan parecido es mi nivel al de mis vecinos
+
+//suma cuanto falta y cuanto es el maximo de todos los elementos de un diccionario
+void sumarFaltantes(struct DiccionarioBienes* diccionario, int* faltante, int* maximo){
+    struct nodoDic* casilla = diccionario->inicio;
+    while(casilla != NULL){
+        struct nodoBienes* bien = casilla->bienes;
+        while(bien != NULL){
+            *maximo += bien->maximo;
+            if(bien->cantidad < bien->maximo)
+                *faltante += bien->maximo - bien->cantidad;
+            bien = bien->sigt;
+        }
+        casilla = casilla->sigt;
+    }
+}
+
+//necesidad = % de bienes y servicios que faltan para llegar al maximo (entre 5 y 99)
+double calcularNecesidad(struct comuna* comuna){
+    int faltante = 0, maximo = 0;
+    sumarFaltantes(comuna->diccionarioBienes, &faltante, &maximo);
+    sumarFaltantes(comuna->diccionarioServicios, &faltante, &maximo);
+
+    double necesidad = (maximo == 0) ? NECESIDAD_MIN : 100.0 * faltante / maximo;
+
+    if(necesidad < NECESIDAD_MIN) necesidad = NECESIDAD_MIN;
+    if(necesidad > NECESIDAD_MAX) necesidad = NECESIDAD_MAX;
+    return necesidad;
+}
+
+//suma el "bienestar" (100 - necesidad) de un vecino, si existe
+void sumarVecino(struct nodoMatriz* vecino, double* suma, int* cuenta){
+    if(vecino == NULL) return;
+
+    *suma += 100.0 - calcularNecesidad(vecino->comuna);
+    (*cuenta)++;
+}
+
+//vecinos = las (hasta) 8 comunas que rodean: esquina=3, borde=5, centro=8
+void sumarVecinos(struct nodoMatriz* nodo, double* suma, int* cuenta){
+    sumarVecino(nodo->arriba, suma, cuenta);
+    sumarVecino(nodo->abajo, suma, cuenta);
+    sumarVecino(nodo->izquierda, suma, cuenta);
+    sumarVecino(nodo->derecha, suma, cuenta);
+
+    //las diagonales se alcanzan dando dos pasos
+    sumarVecino(nodo->arriba ? nodo->arriba->izquierda : NULL, suma, cuenta);
+    sumarVecino(nodo->arriba ? nodo->arriba->derecha : NULL, suma, cuenta);
+    sumarVecino(nodo->abajo ? nodo->abajo->izquierda : NULL, suma, cuenta);
+    sumarVecino(nodo->abajo ? nodo->abajo->derecha : NULL, suma, cuenta);
+}
+
+//calcula y guarda la necesidad y la satisfaccion de la comuna de ese nodo
+void calcularIndices(struct nodoMatriz* nodo){
+    struct comuna* comuna = nodo->comuna;
+
+    double necesidad = calcularNecesidad(comuna);
+    double propia = 100.0 - necesidad;                  //bienestar propio (0-100)
+
+    double suma = 0;
+    int cuenta = 0;
+    sumarVecinos(nodo, &suma, &cuenta);
+    double vecinos = (cuenta > 0) ? suma / cuenta : propia;     //bienestar promedio de los vecinos
+
+    double diferencia = propia - vecinos;
+    if(diferencia < 0) diferencia = -diferencia;
+    double equidad = 100.0 - diferencia;                //100 = igual que sus vecinos
+
+    comuna->necesidad = necesidad;
+    comuna->satisfaccion = PESO_PROPIA * propia
+                         + PESO_VECINOS * vecinos
+                         + PESO_EQUIDAD * equidad;
+}
+
+//recalcula los indices de todas las comunas del tablero
+void calcularIndicesTablero(struct matrizComunas* tablero){
+    struct nodoMatriz* actual = tablero->inicio;
+    for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
+        calcularIndices(actual);
+        actual = recorrerMatriz(actual);
+    }
+}
 
 /*
 ======================================================================
@@ -617,7 +851,7 @@ int main(){
     srand(time(NULL));
 
     struct matrizComunas* tablero = crearTablero();
-    imprimirDiccionarioBienes(tablero->inicio->comuna->diccionario);
+    imprimirDiccionarioBienes(tablero->inicio->comuna->diccionarioServicios);
 
     return 0;
 }
