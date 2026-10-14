@@ -1681,12 +1681,12 @@ void calcularPromedios(struct matrizComunas* tablero, double* satisfaccion, doub
 
 //como quedo la sociedad segun su satisfaccion promedio
 const char* clasificarSociedad(double satisfaccion){
-    if(satisfaccion < 30)       return "Deficiente";
-    else if(satisfaccion < 50)  return "Mala";
-    else if(satisfaccion < 60)  return "Normal";
-    else if(satisfaccion < 70)  return "Bien";
-    else if(satisfaccion < 90)  return "Excelente";
-    else                        return "¡¡Sociedad Perfecta!!";
+    if(satisfaccion < 30) return "Deficiente, como el gobierno de Donald Trump";
+    else if(satisfaccion < 50) return "Mala, como el gobierno de Laura Fernandez";
+    else if(satisfaccion < 60) return "Normal, como el gobierno de nosemequedesinideas";
+    else if(satisfaccion < 70) return "Bien, como el gobierno de Xi Jinping";
+    else if(satisfaccion < 90) return "Excelente, como la clase de Aurelio";
+    else return "¡¡Sociedad Perfecta!!, como ningun gobierno podria";
 }
 
 void mostrarFinPartida(struct matrizComunas* tablero){
