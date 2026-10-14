@@ -7,7 +7,7 @@ void TituloPrincipal();
 
 /*
 =================================================
-                | Funciones utiles|
+        | Funciones utiles|
 =================================================
 */
 
@@ -181,6 +181,9 @@ struct comuna{
 
     struct listaSimple* personas;
 
+    int diasTormenta;           //CAMBIO: dias que le quedan a una tormenta que se origino en esta comuna
+    int intercambiosHoy;        //CAMBIO: intercambios que ha hecho la comuna en el dia actual
+
 };
 
 /**
@@ -207,6 +210,10 @@ struct matrizComunas{
     
     struct listaSimple* bienesDisponibles;
     struct listaSimple* serviciosDisponibles;
+
+    int dia;                    //CAMBIO: dia actual de la partida (empieza en 1)
+    int diasTotales;            //CAMBIO: cantidad de dias que escogio jugar el usuario
+    int diasParaEmergencia;     //CAMBIO: cuantos dias faltan para la siguiente emergencia
 };
 //nodos de la matriz de comunas
 struct nodoMatriz{
@@ -283,6 +290,12 @@ int preguntarCantidadBienes();
 int preguntarCantidadServicios();
 
 /**
+ * CAMBIO: Función que pregunta al usuario cuantos días (turnos) quiere jugar
+ * @return int entre 4 y 99
+ */
+int preguntarCantidadDias();
+
+/**
  * Función que le crea y agrega los diccionarios a todas las comunas
  */
 void meterDiccionarios(struct listaSimple* serviciosDisponibles, struct listaSimple* bienesDisponibles, struct matrizComunas* tablero);
@@ -347,7 +360,11 @@ void imprimirNecesidad(struct comuna* comuna);
 void imprimirRelleno();
 
 void imprimirPersonas(struct listaSimple* personas, char* nombre);
-void imprimirComuna(struct nodoMatriz* nodo);
+
+/**
+ * CAMBIO: ahora también recibe el tablero (lo ocupa el menú de intercambiar)
+ */
+void imprimirComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero);
 
 struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* tablero);
 struct nodoMatriz* buscarComuna(struct matrizComunas* tablero);
@@ -360,16 +377,140 @@ struct nodoMatriz* buscarComuna(struct matrizComunas* tablero);
  */
 struct nodoMatriz* encontrarNodoMatriz(int i, int j, struct matrizComunas* tablero);
 
+/*
+=================================================
+    | Funciones de los días y consumo |
+=================================================
+*/
 
+/**
+ * Función que baja (y a veces sube) de forma aleatoria cada bien/servicio de un diccionario
+ * @param diccionario de bienes o de servicios de una comuna
+ */
+void consumirDiccionario(struct DiccionarioBienes* diccionario);
 
+/**
+ * Función que termina el día: consumo, tormentas, emergencias, recalcula índices y sube el día
+ * @param tablero
+ */
+void pasarDia(struct matrizComunas* tablero);
 
+/*
+=================================================
+    | Funciones de las emergencias |
+=================================================
+*/
 
+/**
+ * Función que dice si hoy hay emergencias y, si las hay, cuántas y de qué tipo
+ * (cada 1 a 3 días, y entre más grande el tablero más emergencias a la vez)
+ * @param tablero
+ */
+void escogerEmergencias(struct matrizComunas* tablero);
 
+/**
+ * Función que escoge un tipo de emergencia y una comuna al azar y la aplica
+ */
+void lanzarEmergencia(struct matrizComunas* tablero);
 
+/**
+ * Función que baja de forma aleatoria algunos elementos de un diccionario
+ * @param int nivel 0=nada, 1=leve, 2=media, 3=fuerte
+ */
+void reducirDiccionario(struct DiccionarioBienes* diccionario, int nivel);
 
+/**
+ * Función que le baja bienes y servicios a una comuna
+ */
+void afectarComuna(struct comuna* comuna, int nivelBienes, int nivelServicios);
 
+/**
+ * Funciones que afectan a las comunas que rodean un nodo (las mismas 8 que usa sumarVecinos)
+ */
+void afectarVecino(struct nodoMatriz* vecino, int nivelBienes, int nivelServicios);
+void afectarVecinos(struct nodoMatriz* nodo, int nivelBienes, int nivelServicios);
 
+/**
+ * Función que imprime el aviso de una emergencia
+ * @param comuna afectada (NULL si no es una sola)
+ */
+void imprimirAvisoEmergencia(char* tipo, struct comuna* comuna, char* descripcion);
 
+/**
+ * Una función por cada emergencia
+ */
+void emergenciaVirus(struct nodoMatriz* nodo);          //su comuna fuerte y un poco las adyacentes
+void emergenciaInundacion(struct nodoMatriz* nodo);     //solo su comuna (bienes)
+void emergenciaApagon(struct nodoMatriz* nodo);         //solo su comuna (servicios)
+void emergenciaTerremoto(struct matrizComunas* tablero);//todas las comunas
+void emergenciaTsunami(struct nodoMatriz* nodo);        //una fila o columna completa
+void emergenciaTormenta(struct nodoMatriz* nodo);       //muy poco, pero dura de 1 a 3 días
 
+/**
+ * Función que aplica el día de las tormentas que siguen activas
+ */
+void continuarTormentas(struct matrizComunas* tablero);
 
+/*
+=================================================
+    | Funciones de los intercambios |
+=================================================
+*/
 
+/**
+ * Función que busca un bien/servicio por su nombre exacto (sin pasarlo a minúscula como buscarBien)
+ */
+struct nodoBienes* buscarBienExacto(struct DiccionarioBienes* diccionario, char* nombre);
+
+/**
+ * Función que cuenta cuantos elementos tiene un diccionario
+ */
+int contarElementos(struct DiccionarioBienes* diccionario);
+
+/**
+ * Función que devuelve el elemento número 'posicion' (empezando en 1) de un diccionario, en el mismo orden en que se imprime
+ */
+struct nodoBienes* obtenerElemento(struct DiccionarioBienes* diccionario, int posicion);
+
+/**
+ * Función que imprime el diccionario con un número al lado de cada elemento
+ */
+void imprimirDiccionarioNumerado(struct DiccionarioBienes* diccionario);
+
+/**
+ * Función que imprime un aviso de error/advertencia con el mismo formato en todo el juego
+ */
+void imprimirAdvertencia(char* mensaje);
+
+/**
+ * Función que pregunta si quiere un bien o un servicio y cuál de la lista
+ * @param int* esServicio queda en 0 si es bien y 1 si es servicio
+ * @return el elemento escogido, NULL si cancela
+ */
+struct nodoBienes* escogerProducto(struct comuna* comuna, int* esServicio);
+
+/**
+ * Función que hace todo el proceso de intercambio entre dos comunas
+ */
+void realizarIntercambio(struct matrizComunas* tablero);
+
+/*
+=================================================
+    | Funciones del final de la partida |
+=================================================
+*/
+
+/**
+ * Función que saca el promedio de satisfacción y de necesidad de todo el tablero
+ */
+void calcularPromedios(struct matrizComunas* tablero, double* satisfaccion, double* necesidad);
+
+/**
+ * Función que dice como quedó la sociedad según su satisfacción promedio
+ */
+const char* clasificarSociedad(double satisfaccion);
+
+/**
+ * Función que muestra el mensaje final con los promedios
+ */
+void mostrarFinPartida(struct matrizComunas* tablero);
