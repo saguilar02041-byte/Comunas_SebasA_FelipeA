@@ -15,7 +15,7 @@
 
 //dias y consumo
 #define CONSUMO_MAX             12       //lo maximo que baja un bien/servicio en un dia
-#define PRODUCCION_PROB         50      //probabilidad de que un bien/servicio suba en el dia
+#define PRODUCCION_PROB         30      //probabilidad de que un bien/servicio suba en el dia
 
 //emergencias
 #define EMERGENCIA_MIN_DIAS     1       //cada cuantos dias ocurre una emergencia, minimo
@@ -923,7 +923,7 @@ void calcularIndicesTablero(struct matrizComunas* tablero){
 void imprimirPersonas(struct listaSimple* personas, char* nombre){
     struct nodoListaSimple* actual = personas->inicio;
     printf(" ╔══════════════════════════════════════════════===+- -- -\n");
-    printf(" ║ Personas de la comuna %s :\n", nombre);
+    printf(" ║ Personas de la comuna %s:\n", nombre);
     printf(" ╚═════════════════════════════════════════════===+- -\n\n");
 
 
@@ -951,8 +951,8 @@ void imprimirComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
     printf(" ╔══════════════════════════════════════════════===+- -- -\n");
     printf(" ║ Te encuentras en la comuna %02d %s\n", comuna->numero, comuna->nombre);
     printf(" ╚═════════════════════════════════════════════===+- -\n");
-    printf(" |                       |                     |\n");
-    printf(" |  Satisfacción : %5.1f |  Necesidad : %5.1f  |\n\n", comuna->satisfaccion, comuna->necesidad);
+    printf(" |                      |                    |\n");
+    printf(" |  Satisfacción: %5.1f |  Necesidad: %5.1f  |\n\n", comuna->satisfaccion, comuna->necesidad);
 
     while(1){
         imprimirLento(100,
@@ -1258,10 +1258,10 @@ void afectarVecinos(struct nodoMatriz* nodo, int nivelBienes, int nivelServicios
 void imprimirAvisoEmergencia(char* tipo, struct comuna* comuna, char* descripcion){
     imprimirLento(100,
         " ╔══════════════════════════════════════════════===+- -- -\n"
-        " ║ !! Emergencia : %s !!\n", tipo);
+        " ║ !! Emergencia: %s !!\n", tipo);
 
     if(comuna != NULL)
-        imprimirLento(100, " ║ Comuna afectada : %02d \n", comuna->numero);
+        imprimirLento(100, " ║ Comuna afectada: %02d \n", comuna->numero);
 
     imprimirLento(100,
         " ║ %s\n"
@@ -1469,7 +1469,7 @@ struct nodoBienes* escogerProducto(struct comuna* comuna, int* esServicio){
         " ║  * Qué quieres intercambiar    ║\n"
         " ╚════════════════════════════════╝\n"
         " | 0. Un bien                     |\n"
-        " | 1. Un servicio                 |\n"
+        " | 1. Un servicio                 |\n\n"
     );
 
     int tipo = pedirEnIntervalo(0, 1);
@@ -1502,7 +1502,7 @@ struct nodoBienes* escogerProducto(struct comuna* comuna, int* esServicio){
 
         struct nodoBienes* escogido = obtenerElemento(diccionario, posicion);
         if(escogido->cantidad <= 0){
-            imprimirAdvertencia("No hay existencias de eso | Escoge otro");
+            imprimirAdvertencia("No hay existencias de eso | Escoge otro\n");
             continue;
         }
 
@@ -1568,7 +1568,7 @@ void realizarIntercambio(struct matrizComunas* tablero){
         if(nodoB != nodoA)
             break;
 
-        imprimirAdvertencia("| Tiene que ser OTRA comuna |");
+        imprimirAdvertencia("| Tiene que ser otra comuna |");
     }
     struct comuna* comunaB = nodoB->comuna;
 
@@ -1651,15 +1651,15 @@ void realizarIntercambio(struct matrizComunas* tablero){
 
     printf(" ╔══════════════════════════════════════════════===+- -- -\n");
     printf(" ║ !! Intercambio realizado !!\n");
-    printf(" ║ De la comuna %02d a la comuna %02d : %d de %s\n", comunaA->numero, comunaB->numero, realA, productoA->nombre);
-    printf(" ║ De la comuna %02d a la comuna %02d : %d de %s\n", comunaB->numero, comunaA->numero, realB, productoB->nombre);
+    printf(" ║ De la comuna %02d a la comuna %02d: %d de %s\n", comunaA->numero, comunaB->numero, realA, productoA->nombre);
+    printf(" ║ De la comuna %02d a la comuna %02d: %d de %s\n", comunaB->numero, comunaA->numero, realB, productoB->nombre);
     printf(" ║\n");
     printf(" ╚═════════════════════════════════════════════===+- -\n\n");
 }
 
 /*
 ======================================================================
-                    | CAMBIO: Final de la partida |
+                    |Final de la partida |
 ======================================================================
 */
 
@@ -1681,12 +1681,12 @@ void calcularPromedios(struct matrizComunas* tablero, double* satisfaccion, doub
 
 //como quedo la sociedad segun su satisfaccion promedio
 const char* clasificarSociedad(double satisfaccion){
-    if(satisfaccion < 30)       return "DEFICIENTE";
-    else if(satisfaccion < 50)  return "MALA";
-    else if(satisfaccion < 60)  return "NORMAL";
-    else if(satisfaccion < 70)  return "BIEN";
-    else if(satisfaccion < 90)  return "EXCELENTE";
-    else                        return "¡¡ SOCIEDAD PERFECTA !!";
+    if(satisfaccion < 30)       return "Deficiente";
+    else if(satisfaccion < 50)  return "Mala";
+    else if(satisfaccion < 60)  return "Normal";
+    else if(satisfaccion < 70)  return "Bien";
+    else if(satisfaccion < 90)  return "Excelente";
+    else                        return "¡¡Sociedad Perfecta!!";
 }
 
 void mostrarFinPartida(struct matrizComunas* tablero){
@@ -1703,9 +1703,9 @@ void mostrarFinPartida(struct matrizComunas* tablero){
     );
 
     imprimirLento(100,
-        " |  Días jugados            : %d\n"
-        " |  Satisfacción promedio   : %5.1f\n"
-        " |  Necesidad promedio      : %5.1f\n\n",
+        " |  Días jugados: %d\n"
+        " |  Satisfacción promedio: %5.1f\n"
+        " |  Necesidad promedio: %5.1f\n\n",
         tablero->diasTotales, satisfaccion, necesidad
     );
 
