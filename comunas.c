@@ -8,6 +8,12 @@
 #include <time.h>
 
 /*
+    Progra 00  -  Estructuras de Datos
+    Made by: Sebastián Aguilar y Felipe Álvarez
+    Espero le gusto muhco profe aurelio
+*/
+
+/*
 ======================================================================
             | Constantes del juego |
 ======================================================================
