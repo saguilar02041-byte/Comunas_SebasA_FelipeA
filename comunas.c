@@ -209,6 +209,11 @@ struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
     return escogidos;
 }
 
+/*/
+Okey ocupamos hacer la lista de personas, con struct persona y dentro de ella, nombre y servicio 
+(ninguno, 1 o 2 maximo) y rehacer funcion para meter personas en comunas
+*/
+
 //diccionario de bienes
 
 void agregarBienesDiccionario(struct listaSimple* bienesDisponibles, struct DiccionarioBienes* diccionario, int personas){
