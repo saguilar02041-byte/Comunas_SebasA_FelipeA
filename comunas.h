@@ -8,7 +8,6 @@
 =================================================
         | Estructuras de datos |
 =================================================
-Van todas arriba para que las funciones de abajo ya las conozcan
 */
 
 //Diccionario que guarda los bienes para cada comuna
@@ -28,7 +27,6 @@ struct DiccionarioBienes{
     int tamaño;
 };
 
-//lista simple para guardar nombres (bienes, servicios, historial)
 struct nodoListaSimple{
     char* nombre;
     struct nodoListaSimple* sigt;
@@ -38,44 +36,44 @@ struct listaSimple{
     int tamaño;
 };
 
-//persona: ahora los servicios son de la persona y no de la comuna
-struct persona{
+struct nodoPersona{
     char* nombre;
-    struct listaSimple* servicios;  //lo que sabe hacer (puede estar vacia)
+    struct listaSimple* servicios;  //los servicios que sabe hacer
 
-    int librosLeidos;               //al llegar a 3 aprende un servicio
-    int leyoHoy;                    //solo se puede ir una vez por dia a la biblioteca
-    int seleccionada;               //para escogerla en el menu de la biblioteca
+    int librosLeidos;               //a los 3 libros aprende un servicio 
+    int leyoHoy;
+    int seleccionada;
 
-    int criminal;                   //1 si es de las personas marcadas
-    int criminalidad;               //porcentaje, al llegar a 55 la expulsan
+    int criminal;                   //si es criminal :v
+    int criminalidad;               //porcentaje, al llegar a 55 lo sacan
 
-    struct persona* sigt;
+    struct nodoPersona* sigt;
 };
 struct listaPersonas{
-    struct persona* inicio;
+    struct nodoPersona* inicio;
     int tamaño;
 };
 
-//arbol AVL con los titulos de todos los libros de la carpeta
+
 struct nodoAVL{
     char* titulo;
-    char* ruta;                     //donde esta el archivo
+    char* ruta;
+
     int altura;
 
     struct nodoAVL* izq;
     struct nodoAVL* der;
 };
 
-//arbol chaflaneado (splay) que funciona como cache de la biblioteca de una comuna
-struct nodoSplay{
+//arbol chaflaneado
+struct nodoChaf{
     char* titulo;
-    long tamañoBytes;               //lo que se cargo del archivo
+    long tamañoBytes;
     int lineas;
     int vecesLeido;
 
-    struct nodoSplay* izq;
-    struct nodoSplay* der;
+    struct nodoChaf* izq;
+    struct nodoChaf* der;
 };
 
 //struct de las comunas
@@ -92,29 +90,32 @@ struct comuna{
     struct DiccionarioBienes* diccionarioServicios;
 
     struct listaPersonas* personas;
-    struct nodoSplay* biblioteca;   //cache de libros de esta comuna
+    struct nodoChaf* biblioteca;
 
-    int diasTormenta;           //CAMBIO: dias que le quedan a una tormenta que se origino en esta comuna
-    int intercambiosHoy;        //CAMBIO: intercambios que ha hecho la comuna en el dia actual
+    int diasTormenta;
+    int intercambiosHoy;
 
-    int disuelta;               //1 si la comuna ya no existe
-    int delJugador;             //1 si es una de las comunas que maneja el jugador
+    int disuelta;               //booleano
+    int delJugador;             //booleano
 
-    int regalosDados;           //unidades que ha entregado en intercambios
-    int regalosRecibidos;       //unidades que ha recibido
-    int regalosRecientes;       //lo recibido hace poco, se va olvidando con los dias
-    int desastre;               //golpe que deja una emergencia, se recupera con los dias
+    int regalosDados;
+    int regalosRecibidos;
+    int regalosRecientes;
+    
+    int desastre;
 };
 
 //lo que se ocupa llevar para los logros
 struct logros{
     int intercambios;           //intercambios hechos o aceptados por el jugador
-    int intercambioHoy;         //si hoy hizo alguno
-    int comunasPerdidas;        //comunas del jugador que se han disuelto
+    int intercambioHoy;
+
+    int comunasPerdidas;        //comunas que se han disuelto
     int diaPerdida1;            //dia de la ultima comuna perdida
     int diaPerdida2;            //dia de la penultima
-    int caos;                   //1 si perdio tres comunas en menos de 3 turnos
-    int diasSinIntercambiar;    //racha actual
+
+    int caos;                   //booleano si perdio tres comunas en menos de 3 turnos
+    int diasSinIntercambiar;
     int rachaSinIntercambiar;   //la racha mas larga
 };
 
@@ -126,17 +127,18 @@ struct matrizComunas{
     struct listaSimple* bienesDisponibles;
     struct listaSimple* serviciosDisponibles;
 
-    int dia;                    //CAMBIO: dia actual de la partida (empieza en 1)
-    int diasTotales;            //CAMBIO: cantidad de dias que escogio jugar el usuario
-    int diasParaEmergencia;     //CAMBIO: cuantos dias faltan para la siguiente emergencia
+    int dia;
+    int diasTotales;
+    int diasParaEmergencia;
 
     struct nodoAVL* catalogo;   //todos los libros de la carpeta
     int totalLibros;
 
     struct listaSimple* historial;  //lo importante que ha pasado en la partida
     struct logros logros;
-    int salir;                  //1 cuando el jugador guarda y sale
+    int salir;
 };
+
 //nodos de la matriz de comunas
 struct nodoMatriz{
     struct nodoMatriz* arriba;
@@ -286,7 +288,7 @@ void imprimirListaSimple(struct listaSimple* lista);
 int estaEnLista(struct listaSimple* lista, char* nombre);
 
 /**
- * Función que retorna el nombre en la posición dada (empieza en 0)
+ * Función que retorna el nombre en la posición dada
  */
 char* nombreEnPosicion(struct listaSimple* lista, int posicion);
 
@@ -296,24 +298,35 @@ char* nombreEnPosicion(struct listaSimple* lista, int posicion);
 =================================================
 */
 
+/**
+ * Función que crea una lista de personas
+ */
 struct listaPersonas* crearListaPersonas();
-struct persona* crearPersona(char* nombre);
-void agregarPersona(struct persona* persona, struct listaPersonas* lista);
 
 /**
- * Función que desenlaza una persona de su lista (no la borra)
+ * Función que crea una personita
  */
-void sacarPersona(struct persona* persona, struct listaPersonas* lista);
+struct nodoPersona* crearPersona(char* nombre);
 
 /**
- * Función que retorna la persona número 'posicion' (empieza en 1)
+ * Función que agrega una persona a la lista de personas
  */
-struct persona* obtenerPersona(struct listaPersonas* lista, int posicion);
+void agregarPersona(struct nodoPersona* persona, struct listaPersonas* lista);
+
+/**
+ * Función que quita una persona de su lista
+ */
+void sacarPersona(struct nodoPersona* persona, struct listaPersonas* lista);
+
+/**
+ * Función que retorna la persona en una posición
+ */
+struct nodoPersona* obtenerPersona(struct listaPersonas* lista, int posicion);
 
 /**
  * Función que le agrega un servicio a una persona
  */
-void darServicio(struct persona* persona, char* servicio);
+void darServicio(struct nodoPersona* persona, char* servicio);
 
 /**
  * Función que le reparte 0, 1 o más servicios al azar a cada persona
@@ -328,12 +341,12 @@ void actualizarServicios(struct comuna* comuna);
 
 /**
  * Función que imprime los servicios con la cantidad de personas que los saben
- * @param int numerado 1=con un número al lado, 0=sin número
+ * @param int
  */
 void imprimirServicios(struct DiccionarioBienes* diccionario, int numerado);
 
 /**
- * Función que saca de la comuna hasta 'cantidad' personas que sepan ese servicio
+ * Función que saca una cantidad de personas que tengan dicho servicio
  * @return lista con las personas que salieron
  */
 struct listaPersonas* sacarPersonasConServicio(struct comuna* comuna, char* servicio, int cantidad);
@@ -415,8 +428,8 @@ int preguntarCantidadBienes();
 int preguntarCantidadServicios();
 
 /**
- * CAMBIO: Función que pregunta al usuario cuantos días (turnos) quiere jugar
- * @return int entre 15 y 99
+ * Función que pregunta al usuario cuantos días quiere jugar
+ * @return int 
  */
 int preguntarCantidadDias();
 
@@ -433,18 +446,13 @@ void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas
 
 void sumarFaltantes(struct DiccionarioBienes* diccionario, int* faltante, int* maximo);
 
-/**
- * Necesidad: depende solo de los bienes y de la gente con oficio que tiene la comuna (y del golpe de un desastre)
- */
+
 double calcularNecesidad(struct comuna* comuna);
 
-/**
- * Reciprocidad: balance entre lo que la comuna ha dado y lo que ha recibido
- */
 double calcularReciprocidad(struct comuna* comuna);
 
 /**
- * Qué tantos regalos ha recibido la comuna últimamente (0 a 100)
+ * Qué tantos regalos ha recibido la comuna últimamente
  */
 double calcularNivelRegalos(struct comuna* comuna);
 
@@ -479,9 +487,6 @@ void imprimirDisuelta(int linea);
 
 void imprimirPersonas(struct listaPersonas* personas, char* nombre);
 
-/**
- * CAMBIO: ahora también recibe el tablero (lo ocupa el menú de intercambiar)
- */
 void imprimirComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero);
 
 /**
@@ -532,7 +537,7 @@ void afectarVecinos(struct nodoMatriz* nodo, int nivelBienes, int nivelServicios
 
 /**
  * Función que imprime el aviso de una emergencia
- * @param comuna afectada (NULL si no es una sola)
+ * @param comuna afectada 
  */
 void imprimirAvisoEmergencia(char* tipo, struct comuna* comuna, char* descripcion);
 
@@ -565,12 +570,12 @@ void imprimirAdvertencia(char* mensaje);
 struct nodoBienes* escogerProducto(struct comuna* comuna, int* esServicio);
 
 /**
- * Función que mueve los productos entre dos comunas (la usan el jugador y las comunas autónomas)
- * @return 1 si se movió algo, 0 si no se pudo
+ * Función que mueve los productos entre dos comunas
+ * @return si se pudo o no
  */
 int aplicarIntercambio(struct comuna* comunaA, struct nodoBienes* productoA, int cantidadA, int servicioA,
-                       struct comuna* comunaB, struct nodoBienes* productoB, int cantidadB, int servicioB,
-                       int* realA, int* realB);
+                    struct comuna* comunaB, struct nodoBienes* productoB, int cantidadB, int servicioB,
+                    int* realA, int* realB);
 
 /**
  * Función que hace todo el proceso de intercambio del jugador
@@ -595,7 +600,7 @@ struct nodoBienes* masAbundante(struct DiccionarioBienes* diccionario);
  * @return 1 si hay propuesta, 0 si no
  */
 int armarPropuesta(struct comuna* pide, struct comuna* otra, struct nodoBienes** productoDa, int* cantidadDa, int* servicioDa,
-                   struct nodoBienes** productoPide, int* cantidadPide, int* servicioPide);
+                struct nodoBienes** productoPide, int* cantidadPide, int* servicioPide);
 
 /**
  * Función donde una comuna autónoma busca otra autónoma con quien intercambiar
@@ -638,7 +643,7 @@ int obtenerVecinosVivos(struct nodoMatriz* nodo, struct nodoMatriz* vecinos[8]);
 void ajustarMaximos(struct comuna* comuna, int personasAntes);
 
 /**
- * Función que le completa al jugador sus 3 comunas (o las que queden)
+ * Función que le completa al jugador sus 3 comunas
  */
 void asignarComunasJugador(struct matrizComunas* tablero);
 
@@ -652,7 +657,7 @@ void registrarEvento(struct matrizComunas* tablero, char* texto);
 
 /*
 =================================================
-    | Funciones del árbol AVL (catálogo) |
+    | Funciones del árbol AVL |
 =================================================
 */
 
@@ -667,9 +672,6 @@ struct nodoAVL* insertarAVL(struct nodoAVL* raiz, char* titulo, char* ruta);
  */
 struct nodoAVL* buscarAVL(struct nodoAVL* raiz, char* titulo);
 
-/**
- * Función que retorna el libro número 'posicion' en orden alfabético
- */
 struct nodoAVL* obtenerAVL(struct nodoAVL* raiz, int posicion, int* contador);
 
 /**
@@ -681,33 +683,33 @@ void imprimirCatalogo(struct nodoAVL* raiz, int* contador, int limite);
 
 /*
 =================================================
-    | Funciones del árbol chaflaneado (caché) |
+    | Funciones del árbol chaflaneado |
 =================================================
 */
 
-struct nodoSplay* crearNodoSplay(char* titulo);
-struct nodoSplay* rotarDerechaSplay(struct nodoSplay* nodo);
-struct nodoSplay* rotarIzquierdaSplay(struct nodoSplay* nodo);
+struct nodoChaf* crearNodoSplay(char* titulo);
+struct nodoChaf* rotarDerechaSplay(struct nodoChaf* nodo);
+struct nodoChaf* rotarIzquierdaSplay(struct nodoChaf* nodo);
 
 /**
- * Función que sube a la raíz el nodo buscado (o el último que tocó si no está)
+ * Función que chaflanea :vvvvv
  */
-struct nodoSplay* chaflanear(struct nodoSplay* raiz, char* titulo);
+struct nodoChaf* chaflanear(struct nodoChaf* raiz, char* titulo);
 
 /**
  * Función que inserta un libro nuevo y lo deja en la raíz
  */
-struct nodoSplay* insertarSplay(struct nodoSplay* raiz, struct nodoSplay* nuevo);
+struct nodoChaf* insertarSplay(struct nodoChaf* raiz, struct nodoChaf* nuevo);
 
 /**
  * Inserción normal de árbol binario, solo se usa al cargar una partida para dejar el árbol igual
  */
-struct nodoSplay* insertarSinChaflanear(struct nodoSplay* raiz, struct nodoSplay* nuevo);
+struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* nuevo);
 
-int contarSplay(struct nodoSplay* raiz);
-struct nodoSplay* obtenerSplay(struct nodoSplay* raiz, int posicion, int* contador);
-void liberarSplay(struct nodoSplay* raiz);
-void imprimirArbolSplay(struct nodoSplay* raiz);
+int contarSplay(struct nodoChaf* raiz);
+struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador);
+void liberarSplay(struct nodoChaf* raiz);
+void imprimirArbolSplay(struct nodoChaf* raiz);
 
 /*
 =================================================
@@ -724,9 +726,9 @@ int cargarLibro(char* ruta, long* bytes, int* lineas);
 /**
  * Función donde una persona va a la biblioteca de su comuna y lee un libro
  */
-void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct persona* persona);
+void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodoPersona* persona);
 
-void aprenderServicio(struct matrizComunas* tablero, struct persona* persona);
+void aprenderServicio(struct matrizComunas* tablero, struct nodoPersona* persona);
 void enviarALeer(struct comuna* comuna, struct matrizComunas* tablero);
 void menuBiblioteca(struct comuna* comuna, struct matrizComunas* tablero);
 
@@ -736,7 +738,7 @@ void menuBiblioteca(struct comuna* comuna, struct matrizComunas* tablero);
 =================================================
 */
 
-void cometerCrimen(struct persona* persona, struct nodoMatriz* nodo, struct matrizComunas* tablero);
+void cometerCrimen(struct nodoPersona* persona, struct nodoMatriz* nodo, struct matrizComunas* tablero);
 void eventosCriminales(struct matrizComunas* tablero);
 
 /*
@@ -752,7 +754,7 @@ int imprimirLogro(int conseguido, char* nombre, char* descripcion);
 
 /**
  * Función que imprime todos los logros
- * @param int final 1 si ya terminó la partida (ahí se revisan los que dependen del final)
+ * @param int 1 si ya terminó la partida
  * @return cuántos se consiguieron
  */
 int imprimirLogros(struct matrizComunas* tablero, int final);
@@ -764,7 +766,7 @@ int imprimirLogros(struct matrizComunas* tablero, int final);
 */
 
 void guardarDiccionario(FILE* archivo, struct DiccionarioBienes* diccionario);
-void guardarSplay(FILE* archivo, struct nodoSplay* raiz);
+void guardarSplay(FILE* archivo, struct nodoChaf* raiz);
 void guardarLista(FILE* archivo, struct listaSimple* lista);
 
 /**

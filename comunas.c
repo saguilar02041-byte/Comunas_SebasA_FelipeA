@@ -482,22 +482,22 @@ struct listaPersonas* crearListaPersonas(){
 }
 
 //el calloc ya deja en 0 los libros leidos y la criminalidad
-struct persona* crearPersona(char* nombre){
-    struct persona* nueva = calloc(1, sizeof(struct persona));
+struct nodoPersona* crearPersona(char* nombre){
+    struct nodoPersona* nueva = calloc(1, sizeof(struct nodoPersona));
     nueva->nombre = nombre;
     nueva->servicios = crearListaSimple();
     return nueva;
 }
 
-void agregarPersona(struct persona* persona, struct listaPersonas* lista){
+void agregarPersona(struct nodoPersona* persona, struct listaPersonas* lista){
     persona->sigt = lista->inicio;
     lista->inicio = persona;
     lista->tamaño++;
 }
 
-void sacarPersona(struct persona* persona, struct listaPersonas* lista){
-    struct persona* anterior = NULL;
-    struct persona* actual = lista->inicio;
+void sacarPersona(struct nodoPersona* persona, struct listaPersonas* lista){
+    struct nodoPersona* anterior = NULL;
+    struct nodoPersona* actual = lista->inicio;
 
     //busco la persona y la que esta antes
     while(actual != NULL && actual != persona){
@@ -516,15 +516,15 @@ void sacarPersona(struct persona* persona, struct listaPersonas* lista){
     lista->tamaño--;
 }
 
-struct persona* obtenerPersona(struct listaPersonas* lista, int posicion){
-    struct persona* actual = lista->inicio;
+struct nodoPersona* obtenerPersona(struct listaPersonas* lista, int posicion){
+    struct nodoPersona* actual = lista->inicio;
     for(int i = 1; i < posicion && actual != NULL; i++){
         actual = actual->sigt;
     }
     return actual;
 }
 
-void darServicio(struct persona* persona, char* servicio){
+void darServicio(struct nodoPersona* persona, char* servicio){
     agregarNodoSimple(crearNodoListaSimple(strdup(servicio)), persona->servicios);
 }
 
@@ -535,7 +535,7 @@ void repartirServicios(struct matrizComunas* tablero){
     struct nodoMatriz* actual = tablero->inicio;
     for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
 
-        struct persona* persona = actual->comuna->personas->inicio;
+        struct nodoPersona* persona = actual->comuna->personas->inicio;
         while(persona != NULL){
             int sorteo = randomIntervalo(1, 100);
             int cantidad;
@@ -583,7 +583,7 @@ void actualizarServicios(struct comuna* comuna){
     }
 
     //y cada persona suma 1 en lo que sabe hacer
-    struct persona* persona = comuna->personas->inicio;
+    struct nodoPersona* persona = comuna->personas->inicio;
     while(persona != NULL){
         struct nodoListaSimple* sabe = persona->servicios->inicio;
         while(sabe != NULL){
@@ -624,9 +624,9 @@ void imprimirServicios(struct DiccionarioBienes* diccionario, int numerado){
 struct listaPersonas* sacarPersonasConServicio(struct comuna* comuna, char* servicio, int cantidad){
     struct listaPersonas* salen = crearListaPersonas();
 
-    struct persona* persona = comuna->personas->inicio;
+    struct nodoPersona* persona = comuna->personas->inicio;
     while(persona != NULL && salen->tamaño < cantidad){
-        struct persona* siguiente = persona->sigt;      //lo guardo porque la persona se va a desenlazar
+        struct nodoPersona* siguiente = persona->sigt;      //lo guardo porque la persona se va a desenlazar
 
         if(estaEnLista(persona->servicios, servicio)){
             sacarPersona(persona, comuna->personas);
@@ -640,7 +640,7 @@ struct listaPersonas* sacarPersonasConServicio(struct comuna* comuna, char* serv
 //mete todas las personas de la lista en la comuna destino
 void pasarPersonas(struct listaPersonas* personas, struct comuna* destino){
     while(personas->inicio != NULL){
-        struct persona* persona = personas->inicio;
+        struct nodoPersona* persona = personas->inicio;
         sacarPersona(persona, personas);
         agregarPersona(persona, destino->personas);
     }
@@ -658,7 +658,7 @@ void marcarCriminales(struct matrizComunas* tablero){
 
         int marcadas = 0;
         while(marcadas < cantidad){
-            struct persona* persona = obtenerPersona(personas, randomIntervalo(1, personas->tamaño));
+            struct nodoPersona* persona = obtenerPersona(personas, randomIntervalo(1, personas->tamaño));
             if(persona->criminal)
                 continue;       //ya estaba marcada, saco otra
 
@@ -1320,7 +1320,7 @@ void imprimirPersonas(struct listaPersonas* personas, char* nombre){
     printf(" ║ Personas de la comuna %s: %d\n", nombre, personas->tamaño);
     printf(" ╚═════════════════════════════════════════════===+- -\n\n");
 
-    struct persona* actual = personas->inicio;
+    struct nodoPersona* actual = personas->inicio;
     while(actual != NULL){
         printf(" - %-12s | Libros: %d | Criminalidad: %2d%% | Servicios: ",
                 actual->nombre, actual->librosLeidos, actual->criminalidad);
@@ -1548,7 +1548,7 @@ void pasarDia(struct matrizComunas* tablero){
             comuna->regalosRecientes = comuna->regalosRecientes * 2 / 3;
 
             //mañana todos pueden volver a la biblioteca
-            struct persona* persona = comuna->personas->inicio;
+            struct nodoPersona* persona = comuna->personas->inicio;
             while(persona != NULL){
                 persona->leyoHoy = 0;
                 persona = persona->sigt;
@@ -2509,7 +2509,7 @@ void disolverComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
 
     //cada persona se va con todo y sus servicios
     while(comuna->personas->inicio != NULL){
-        struct persona* persona = comuna->personas->inicio;
+        struct nodoPersona* persona = comuna->personas->inicio;
         struct comuna* destino;
 
         if(cantidad > 0){
@@ -2789,15 +2789,15 @@ Cada vez que se busca un libro, ese libro sube hasta la raiz con rotaciones.
 Asi los libros que mas se leen quedan arriba y se encuentran casi de una vez
 */
 
-struct nodoSplay* crearNodoSplay(char* titulo){
-    struct nodoSplay* nuevo = calloc(1, sizeof(struct nodoSplay));
+struct nodoChaf* crearNodoSplay(char* titulo){
+    struct nodoChaf* nuevo = calloc(1, sizeof(struct nodoChaf));
     nuevo->titulo = strdup(titulo);
     return nuevo;
 }
 
 //el hijo izquierdo sube y el nodo baja a la derecha
-struct nodoSplay* rotarDerechaSplay(struct nodoSplay* nodo){
-    struct nodoSplay* sube = nodo->izq;
+struct nodoChaf* rotarDerechaSplay(struct nodoChaf* nodo){
+    struct nodoChaf* sube = nodo->izq;
 
     nodo->izq = sube->der;
     sube->der = nodo;
@@ -2808,8 +2808,8 @@ struct nodoSplay* rotarDerechaSplay(struct nodoSplay* nodo){
 }
 
 //el hijo derecho sube y el nodo baja a la izquierda
-struct nodoSplay* rotarIzquierdaSplay(struct nodoSplay* nodo){
-    struct nodoSplay* sube = nodo->der;
+struct nodoChaf* rotarIzquierdaSplay(struct nodoChaf* nodo){
+    struct nodoChaf* sube = nodo->der;
 
     nodo->der = sube->izq;
     sube->izq = nodo;
@@ -2820,7 +2820,7 @@ struct nodoSplay* rotarIzquierdaSplay(struct nodoSplay* nodo){
 }
 
 //sube el titulo buscado hasta la raiz. Si no esta, sube el ultimo nodo por el que paso
-struct nodoSplay* chaflanear(struct nodoSplay* raiz, char* titulo){
+struct nodoChaf* chaflanear(struct nodoChaf* raiz, char* titulo){
     if(raiz == NULL)
         return NULL;
 
@@ -2875,7 +2875,7 @@ struct nodoSplay* chaflanear(struct nodoSplay* raiz, char* titulo){
 }
 
 //mete un libro nuevo en la raiz. El arbol ya tiene que venir chaflaneado con ese titulo
-struct nodoSplay* insertarSplay(struct nodoSplay* raiz, struct nodoSplay* nuevo){
+struct nodoChaf* insertarSplay(struct nodoChaf* raiz, struct nodoChaf* nuevo){
     if(raiz == NULL)
         return nuevo;
 
@@ -2894,7 +2894,7 @@ struct nodoSplay* insertarSplay(struct nodoSplay* raiz, struct nodoSplay* nuevo)
 
 //insercion normal de arbol binario de busqueda, sin rotar nada
 //solo se usa al cargar una partida, para que el arbol quede con la misma forma que tenia
-struct nodoSplay* insertarSinChaflanear(struct nodoSplay* raiz, struct nodoSplay* nuevo){
+struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* nuevo){
     if(raiz == NULL)
         return nuevo;
 
@@ -2905,18 +2905,18 @@ struct nodoSplay* insertarSinChaflanear(struct nodoSplay* raiz, struct nodoSplay
     return raiz;
 }
 
-int contarSplay(struct nodoSplay* raiz){
+int contarSplay(struct nodoChaf* raiz){
     if(raiz == NULL)
         return 0;
     return 1 + contarSplay(raiz->izq) + contarSplay(raiz->der);
 }
 
 //recorre en orden hasta llegar al nodo numero 'posicion'
-struct nodoSplay* obtenerSplay(struct nodoSplay* raiz, int posicion, int* contador){
+struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador){
     if(raiz == NULL)
         return NULL;
 
-    struct nodoSplay* encontrado = obtenerSplay(raiz->izq, posicion, contador);
+    struct nodoChaf* encontrado = obtenerSplay(raiz->izq, posicion, contador);
     if(encontrado != NULL)
         return encontrado;
 
@@ -2927,7 +2927,7 @@ struct nodoSplay* obtenerSplay(struct nodoSplay* raiz, int posicion, int* contad
     return obtenerSplay(raiz->der, posicion, contador);
 }
 
-void liberarSplay(struct nodoSplay* raiz){
+void liberarSplay(struct nodoChaf* raiz){
     if(raiz == NULL)
         return;
 
@@ -2939,7 +2939,7 @@ void liberarSplay(struct nodoSplay* raiz){
 
 //escribe el nombre corto del nodo en el renglon de su nivel, centrado en el pedazo que le toca
 //(esta funcion solo la usa imprimirArbolSplay, por eso no esta en el .h)
-void colocarNodo(struct nodoSplay* nodo, int nivel, int izquierda, int derecha, char renglones[NIVELES_ARBOL][ANCHO_ARBOL + 1], int* cortado){
+void colocarNodo(struct nodoChaf* nodo, int nivel, int izquierda, int derecha, char renglones[NIVELES_ARBOL][ANCHO_ARBOL + 1], int* cortado){
     if(nodo == NULL)
         return;
 
@@ -2972,7 +2972,7 @@ void colocarNodo(struct nodoSplay* nodo, int nivel, int izquierda, int derecha, 
 }
 
 //imprime los primeros niveles del arbol en forma de piramide
-void imprimirArbolSplay(struct nodoSplay* raiz){
+void imprimirArbolSplay(struct nodoChaf* raiz){
     if(raiz == NULL){
         printf("\n | La caché de esta biblioteca está vacía |\n\n");
         return;
@@ -3032,7 +3032,7 @@ int cargarLibro(char* ruta, long* bytes, int* lineas){
 }
 
 //la persona aprende un servicio al azar de los que todavia no sabe
-void aprenderServicio(struct matrizComunas* tablero, struct persona* persona){
+void aprenderServicio(struct matrizComunas* tablero, struct nodoPersona* persona){
     struct listaSimple* disponibles = tablero->serviciosDisponibles;
 
     int nuevos = disponibles->tamaño - persona->servicios->tamaño;
@@ -3068,7 +3068,7 @@ void aprenderServicio(struct matrizComunas* tablero, struct persona* persona){
 }
 
 //una persona va a la biblioteca: primero se busca el libro en la cache y si no esta se va al archivo
-void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct persona* persona){
+void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodoPersona* persona){
     char* titulo;
     int contador = 0;
 
@@ -3100,7 +3100,7 @@ void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct pers
             return;
         }
 
-        struct nodoSplay* nuevo = crearNodoSplay(titulo);
+        struct nodoChaf* nuevo = crearNodoSplay(titulo);
         nuevo->tamañoBytes = bytes;
         nuevo->lineas = lineas;
         nuevo->vecesLeido = 1;
@@ -3134,7 +3134,7 @@ void enviarALeer(struct comuna* comuna, struct matrizComunas* tablero){
     //lista numerada
     printf("\n");
     int numero = 1;
-    struct persona* persona = personas->inicio;
+    struct nodoPersona* persona = personas->inicio;
     while(persona != NULL){
         persona->seleccionada = 0;
         printf(" %2d. %-12s | Libros: %d | Servicios: %d %s\n", numero, persona->nombre, persona->librosLeidos,
@@ -3221,7 +3221,7 @@ void menuBiblioteca(struct comuna* comuna, struct matrizComunas* tablero){
 */
 
 //una persona marcada hace algo malo y le sube la criminalidad, si llega al limite la expulsan
-void cometerCrimen(struct persona* persona, struct nodoMatriz* nodo, struct matrizComunas* tablero){
+void cometerCrimen(struct nodoPersona* persona, struct nodoMatriz* nodo, struct matrizComunas* tablero){
     struct comuna* comuna = nodo->comuna;
 
     //lo leve pasa mucho mas seguido que lo grave
@@ -3276,9 +3276,9 @@ void eventosCriminales(struct matrizComunas* tablero){
     for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
 
         if(!actual->comuna->disuelta){
-            struct persona* persona = actual->comuna->personas->inicio;
+            struct nodoPersona* persona = actual->comuna->personas->inicio;
             while(persona != NULL){
-                struct persona* siguiente = persona->sigt;      //lo guardo por si la expulsan
+                struct nodoPersona* siguiente = persona->sigt;      //lo guardo por si la expulsan
 
                 if(persona->criminal && randomIntervalo(1, 100) <= PROB_CRIMEN)
                     cometerCrimen(persona, actual, tablero);
@@ -3393,7 +3393,7 @@ void guardarDiccionario(FILE* archivo, struct DiccionarioBienes* diccionario){
 }
 
 //se guarda en preorden (primero el nodo y despues sus hijos) para poder rearmarlo igualito
-void guardarSplay(FILE* archivo, struct nodoSplay* raiz){
+void guardarSplay(FILE* archivo, struct nodoChaf* raiz){
     if(raiz == NULL)
         return;
 
@@ -3441,7 +3441,7 @@ int guardarPartida(struct matrizComunas* tablero){
 
         //personas con sus servicios
         fprintf(archivo, "%d\n", comuna->personas->tamaño);
-        struct persona* persona = comuna->personas->inicio;
+        struct nodoPersona* persona = comuna->personas->inicio;
         while(persona != NULL){
             fprintf(archivo, "%s\n", persona->nombre);
             fprintf(archivo, "%d %d %d %d\n", persona->librosLeidos, persona->leyoHoy, persona->criminal, persona->criminalidad);
@@ -3566,7 +3566,7 @@ struct matrizComunas* cargarPartida(){
         int cantidad = atoi(linea);
         for(int k = 0; k < cantidad; k++){
             leerLinea(archivo, linea, sizeof(linea));
-            struct persona* persona = crearPersona(strdup(linea));
+            struct nodoPersona* persona = crearPersona(strdup(linea));
 
             leerLinea(archivo, linea, sizeof(linea));
             sscanf(linea, "%d %d %d %d", &persona->librosLeidos, &persona->leyoHoy, &persona->criminal, &persona->criminalidad);
@@ -3583,7 +3583,7 @@ struct matrizComunas* cargarPartida(){
         cantidad = atoi(linea);
         for(int k = 0; k < cantidad; k++){
             leerLinea(archivo, linea, sizeof(linea));
-            struct nodoSplay* nodo = crearNodoSplay(linea);
+            struct nodoChaf* nodo = crearNodoSplay(linea);
 
             leerLinea(archivo, linea, sizeof(linea));
             sscanf(linea, "%ld %d %d", &nodo->tamañoBytes, &nodo->lineas, &nodo->vecesLeido);
