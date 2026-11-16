@@ -1883,7 +1883,7 @@ struct nodoBienes* obtenerElemento(struct DiccionarioBienes* diccionario, int po
     }
     return NULL; //si no existe esa posicion
 }
-----
+
 void imprimirDiccionarioNumerado(struct DiccionarioBienes* diccionario){
     int numero = 1;
 
