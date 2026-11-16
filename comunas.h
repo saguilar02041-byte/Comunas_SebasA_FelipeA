@@ -687,7 +687,7 @@ void imprimirCatalogo(struct nodoAVL* raiz, int* contador, int limite);
 =================================================
 */
 
-struct nodoChaf* crearNodoSplay(char* titulo);
+struct nodoChaf* crearNodoChaf(char* titulo);
 struct nodoChaf* rotarDerechaChaf(struct nodoChaf* nodo);
 struct nodoChaf* rotarIzquierdaChaf(struct nodoChaf* nodo);
 
@@ -706,9 +706,9 @@ struct nodoChaf* insertarChaf(struct nodoChaf* raiz, struct nodoChaf* nuevo);
  */
 struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* nuevo);
 
-int contarSplay(struct nodoChaf* raiz);
-struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador);
-void liberarSplay(struct nodoChaf* raiz);
+int contarChaf(struct nodoChaf* raiz);
+struct nodoChaf* obtenerChaf(struct nodoChaf* raiz, int posicion, int* contador);
+void liberarChaf(struct nodoChaf* raiz);
 void imprimirArbolChaf(struct nodoChaf* raiz);
 
 /*

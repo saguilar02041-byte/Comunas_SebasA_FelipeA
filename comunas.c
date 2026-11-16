@@ -2555,7 +2555,7 @@ void disolverComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
     comuna->diccionarioBienes = NULL;
     comuna->diccionarioServicios = NULL;
 
-    liberarSplay(comuna->biblioteca);
+    liberarChaf(comuna->biblioteca);
     comuna->biblioteca = NULL;
 
     char mensaje[200];
@@ -2798,7 +2798,7 @@ void imprimirCatalogo(struct nodoAVL* raiz, int* contador, int limite){
 
 */
 
-struct nodoChaf* crearNodoSplay(char* titulo){
+struct nodoChaf* crearNodoChaf(char* titulo){
     struct nodoChaf* nuevo = calloc(1, sizeof(struct nodoChaf));
     nuevo->titulo = strdup(titulo);
     return nuevo;
@@ -2912,18 +2912,18 @@ struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* n
     return raiz;
 }
 
-int contarSplay(struct nodoChaf* raiz){
+int contarChaf(struct nodoChaf* raiz){
     if(raiz == NULL)
         return 0;
-    return 1 + contarSplay(raiz->izq) + contarSplay(raiz->der);
+    return 1 + contarChaf(raiz->izq) + contarChaf(raiz->der);
 }
 
 //recorre en orden hasta llegar al nodo numero 'posicion'
-struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador){
+struct nodoChaf* obtenerChaf(struct nodoChaf* raiz, int posicion, int* contador){
     if(raiz == NULL)
         return NULL;
 
-    struct nodoChaf* encontrado = obtenerSplay(raiz->izq, posicion, contador);
+    struct nodoChaf* encontrado = obtenerChaf(raiz->izq, posicion, contador);
     if(encontrado != NULL)
         return encontrado;
 
@@ -2931,15 +2931,15 @@ struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador
     if(*contador == posicion)
         return raiz;
 
-    return obtenerSplay(raiz->der, posicion, contador);
+    return obtenerChaf(raiz->der, posicion, contador);
 }
 
-void liberarSplay(struct nodoChaf* raiz){
+void liberarChaf(struct nodoChaf* raiz){
     if(raiz == NULL)
         return;
 
-    liberarSplay(raiz->izq);
-    liberarSplay(raiz->der);
+    liberarChaf(raiz->izq);
+    liberarChaf(raiz->der);
     free(raiz->titulo);
     free(raiz);
 }
@@ -3078,9 +3078,9 @@ void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodo
     int contador = 0;
 
     //casi siempre se antoja de un libro que ya alguien leyo (esta en la cache), si no uno cualquiera del catalogo
-    int enCache = contarSplay(comuna->biblioteca);
+    int enCache = contarChaf(comuna->biblioteca);
     if(enCache > 0 && randomIntervalo(1, 100) <= PROB_CACHE)
-        titulo = obtenerSplay(comuna->biblioteca, randomIntervalo(1, enCache), &contador)->titulo;
+        titulo = obtenerChaf(comuna->biblioteca, randomIntervalo(1, enCache), &contador)->titulo;
     else
         titulo = obtenerAVL(tablero->catalogo, randomIntervalo(1, tablero->totalLibros), &contador)->titulo;
 
@@ -3105,7 +3105,7 @@ void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodo
             return;
         }
 
-        struct nodoChaf* nuevo = crearNodoSplay(titulo);
+        struct nodoChaf* nuevo = crearNodoChaf(titulo);
         nuevo->tamañoBytes = bytes;
         nuevo->lineas = lineas;
         nuevo->vecesLeido = 1;
@@ -3459,7 +3459,7 @@ int guardarPartida(struct matrizComunas* tablero){
         }
 
         //la cache de la biblioteca
-        fprintf(archivo, "%d\n", contarSplay(comuna->biblioteca));
+        fprintf(archivo, "%d\n", contarChaf(comuna->biblioteca));
         guardarChaflaneado(archivo, comuna->biblioteca);
     }
 
@@ -3594,7 +3594,7 @@ struct matrizComunas* cargarPartida(){
         cantidad = atoi(linea);
         for(int k = 0; k < cantidad; k++){
             leerLinea(archivo, linea, sizeof(linea));
-            struct nodoChaf* nodo = crearNodoSplay(linea);
+            struct nodoChaf* nodo = crearNodoChaf(linea);
 
             leerLinea(archivo, linea, sizeof(linea));
             sscanf(linea, "%ld %d %d", &nodo->tamañoBytes, &nodo->lineas, &nodo->vecesLeido);
