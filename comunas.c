@@ -6,12 +6,13 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
-#include <dirent.h>         //para leer la carpeta de libros
-#include <sys/stat.h>       //para saber si algo es carpeta y para crearla
+#include <dirent.h>
+#include <sys/stat.h>
 
 /*
     Progra 02  -  Estructuras de Datos
     Made by: Sebastián Aguilar y Felipe Álvarez
+
     Espero le gusto muhco profe aurelio
     Ahora con bibliotecas :D
 */
@@ -24,55 +25,59 @@
 ======================================================================
 */
 
-//colores (son codigos de la terminal, no ocupan libreria)
-#define AZUL                    "\033[1;34m"
-#define SIN_COLOR               "\033[0m"
+/* Implentamos variables generales para el juego, esto nos ahorra mucho el como se manejan
+las cosas dentro de la simulacion y asi. Todo se cambia a gusto y queda mas bonito*/
+
+//colores pa imprimir en terminal bonito
+#define AZUL                    "\033[1;34m" //para el jugador
+#define SIN_COLOR               "\033[0m" // para lo demas
 
 //dias y consumo
-#define CONSUMO_MAX             30      //lo maximo que baja un bien en un dia
-#define PRODUCCION_PROB         35      //probabilidad de que un bien suba en el dia
+#define CONSUMO_MAX             30 //lo maximo que baja un bien en un dia
+#define PRODUCCION_PROB         35 //probabilidad de que un bien suba en el dia
 
 //emergencias
-#define EMERGENCIA_MIN_DIAS     1       //cada cuantos dias ocurre una emergencia, minimo
-#define EMERGENCIA_MAX_DIAS     3       //maximo
-#define TORMENTA_MAX_DIAS       3       //duracion de tormenta
-#define DESASTRE_MAX            12      //lo maximo que un desastre le suma a la necesidad
+#define EMERGENCIA_MIN_DIAS     1 //cada cuantos dias ocurre una emergencia, minimo
+#define EMERGENCIA_MAX_DIAS     3 //maximo
+#define TORMENTA_MAX_DIAS       3 //duracion de tormenta
+#define DESASTRE_MAX            12 //lo maximo que un desastre le suma a la necesidad
 
 //intercambios
-#define RETORNO_REGALO          30      //porcentaje de regreso al intercambiar
-#define INTERCAMBIOS_MAX_DIA    3       //cuantos intercambios puede hacer una comuna por dia
-#define VUELTAS_AUTONOMAS_MIN   2       //vueltas de intercambios de las comunas autonomas por dia, minimo
-#define VUELTAS_AUTONOMAS_MAX   3       //maximo
-#define INTENTOS_AUTONOMOS      8       //con cuantas comunas prueba una autonoma antes de rendirse
-#define PROB_SOLICITUD          20      //probabilidad de que le pidan un intercambio a una comuna del jugador
+#define RETORNO_REGALO          30 //porcentaje de regreso al intercambiar
+#define INTERCAMBIOS_MAX_DIA    3 //cuantos intercambios puede hacer una comuna por dia
+#define VUELTAS_AUTONOMAS_MIN   2  //intercambios de las comunas autonomas por dia, minimo
+#define VUELTAS_AUTONOMAS_MAX   3 //maximo
+#define INTENTOS_AUTONOMOS      8  //con cuantas comunas prueba hacer intercambios, pq pueden negarse
+#define PROB_SOLICITUD          20 //probabilidad de que le pidan un intercambio al jugador
 
-//disolucion de comunas (se tienen que cumplir las dos)
+//Condiciones para la disolucion de comunas
 #define NECESIDAD_DISOLUCION    75.0
 #define SATISFACCION_DISOLUCION 30.0
 
-//jugador
+//extra
+//Cuantas comunas usa el jugador, lo hicimos asi pq nos parece mas divertido y dinamico
 #define COMUNAS_JUGADOR         3
 
 //biblioteca
-#define CARPETA_LIBROS          "libros"
+#define CARPETA_LIBROS          "libros" //busca esta para sacar los libros
 #define LIBROS_PARA_APRENDER    3
-#define PROB_CACHE              60      //probabilidad de escoger un libro que ya esta en la cache
-#define NIVELES_ARBOL           4       //niveles del arbol que se imprimen
+#define PROB_CACHE              60 //probabilidad de escoger un libro que ya esta en la cache
+#define NIVELES_ARBOL           4 //niveles del arbol que se imprimen, basicamente el tamano del cache
 #define ANCHO_ARBOL             88
 
 //criminalidad
-#define CRIMINALES_MIN          2       //personas marcadas por comuna
-#define CRIMINALES_MAX          5
-#define PROB_CRIMEN             25      //probabilidad de que una persona marcada haga algo en el dia
-#define CRIMINALIDAD_EXPULSION  55
+#define CRIMINALES_MIN          2 //personas criminales x comuna
+#define CRIMINALES_MAX          5 //maximo
+#define PROB_CRIMEN             25 //probabilidad de que un cruminal haga algo en el dia
+#define CRIMINALIDAD_EXPULSION  55 // con cuanto se expulsa el criminal
 
 //logros
-#define SATISFACCION_LOGRO      90.0
-#define NECESIDAD_AL_FILO       65.0    //para el logro de ganar con las comunas al minimo
-#define SATISFACCION_AL_FILO    40.0
+#define SATISFACCION_LOGRO      90.0 //logro cuando ganas 
+#define NECESIDAD_AL_FILO       65.0 //para el logro de ganar con las comunas al minimo
+#define SATISFACCION_AL_FILO    40.0 //para logro de poca satisfaccion
 
 //guardado
-#define ARCHIVO_GUARDADO        "partida_guardada.txt"
+#define ARCHIVO_GUARDADO        "partida_guardada.txt" //la partida se guarda asi
 
 //para que el arbol chaflaneado avise cada rotacion que hace
 int verRotaciones = 0;
@@ -168,9 +173,9 @@ int pedirInt(){
 
     int valor;           
     while(1){
-        if(scanf("%d", &valor) == 0){               //si el scan da error
+        if(scanf("%d", &valor) == 0){ //si el scan da error
             printf("| !! Se necesita un número ENTERO  !! | \n\n");
-            getchar();                  //no entiendo por qué el getchar soluciona todos mis problemas, pero ahí está
+            getchar();   //no entiendo por qué el getchar soluciona todos mis problemas, pero ahí está
             continue;
         }
         break;}
@@ -218,12 +223,12 @@ struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
 
     if(cantidad > todas->tamaño) cantidad = todas->tamaño;
 
-    //saco 'cantidad' nodos al azar de 'todas' y los paso a 'escogidos'
+    //saco cantidad nodos al azar de todas y los paso a escogidos
     struct listaSimple* escogidos = crearListaSimple();
     for(int i = 0; i < cantidad; i++){
         int pos = randomIntervalo(0, todas->tamaño - 1);
 
-        //busco el nodo en esa posicion (y el anterior, para poder desenlazarlo)
+        //busco el nodo en esa posicion para desenlazarlo
         struct nodoListaSimple* anterior = NULL;
         struct nodoListaSimple* actual = todas->inicio;
         for(int j = 0; j < pos; j++){
@@ -231,14 +236,14 @@ struct listaSimple* extraerRandomArchivo(char* nombreArchivo, int cantidad){
             actual = actual->sigt;
         }
 
-        //lo desenlazo de 'todas'
+        //lo desenlazo de todas
         if(anterior == NULL)
             todas->inicio = actual->sigt;
         else
             anterior->sigt = actual->sigt;
         todas->tamaño--;
 
-        //y lo agrego a 'escogidos' (el nodo se mueve, no se copia)
+        //y lo agrego a escogidos
         agregarNodoSimple(actual, escogidos);
     }
 
@@ -530,6 +535,10 @@ void darServicio(struct nodoPersona* persona, char* servicio){
     agregarNodoSimple(crearNodoListaSimple(strdup(servicio)), persona->servicios);
 }
 
+
+/*okay esta funcion hace que la persona tenga oficios, pues ya estan dentro de ellas y no como aparte como antes
+pueden tener 1, y muy pocos mas de eso
+*/
 //la mayoria de personas sabe 1 servicio o ninguno, pocas saben 2 o 3
 void repartirServicios(struct matrizComunas* tablero){
     struct listaSimple* disponibles = tablero->serviciosDisponibles;
@@ -537,6 +546,7 @@ void repartirServicios(struct matrizComunas* tablero){
     struct nodoMatriz* actual = tablero->inicio;
     for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
 
+        //saca las probabilidades de tener trabajos
         struct nodoPersona* persona = actual->comuna->personas->inicio;
         while(persona != NULL){
             int sorteo = randomIntervalo(1, 100);
@@ -557,14 +567,13 @@ void repartirServicios(struct matrizComunas* tablero){
             persona = persona->sigt;
         }
 
-        //ya con la gente lista se cuenta cuantos saben cada oficio
+        //ya con la gente lista se cuenta cuantos saben cada oficio, listo!!
         actualizarServicios(actual->comuna);
         actual = recorrerMatriz(actual);
     }
 }
 
 //cuenta cuantas personas de la comuna saben cada servicio
-//cantidad = personas que lo saben | maximo = personas que la comuna ocupa con ese oficio
 void actualizarServicios(struct comuna* comuna){
     struct DiccionarioBienes* diccionario = comuna->diccionarioServicios;
 
@@ -598,7 +607,7 @@ void actualizarServicios(struct comuna* comuna){
     }
 }
 
-//imprime cada servicio con las personas que lo saben hacer
+//imprime cada servicio con las personas que lo saben hacer, para que quede bonito y cute
 void imprimirServicios(struct DiccionarioBienes* diccionario, int numerado){
     int numero = 1;
 
@@ -613,6 +622,7 @@ void imprimirServicios(struct DiccionarioBienes* diccionario, int numerado){
             else
                 printf(" - ");
 
+            //descubri que puedo cambiarlos de singular a plurar woow
             printf("%s: %d %s\n", servicio->nombre, servicio->cantidad, servicio->cantidad == 1 ? "persona" : "personas");
             numero++;
             servicio = servicio->sigt;
@@ -622,7 +632,7 @@ void imprimirServicios(struct DiccionarioBienes* diccionario, int numerado){
     printf("\n");
 }
 
-//saca de la comuna hasta 'cantidad' personas que sepan ese servicio y las retorna en una lista aparte
+//saca de la comuna hasta cantidad personas que sepan ese servicio y las retorna en una lista aparte
 struct listaPersonas* sacarPersonasConServicio(struct comuna* comuna, char* servicio, int cantidad){
     struct listaPersonas* salen = crearListaPersonas();
 
@@ -639,7 +649,7 @@ struct listaPersonas* sacarPersonasConServicio(struct comuna* comuna, char* serv
     return salen;
 }
 
-//mete todas las personas de la lista en la comuna destino
+//mete todas las personas de la lista en la comuna destino, asi cada una tiene donde llegar
 void pasarPersonas(struct listaPersonas* personas, struct comuna* destino){
     while(personas->inicio != NULL){
         struct nodoPersona* persona = personas->inicio;
@@ -649,7 +659,7 @@ void pasarPersonas(struct listaPersonas* personas, struct comuna* destino){
     free(personas);
 }
 
-//solo estas personas van a poder cometer crimenes en toda la partida
+//solo estas personas van a poder cometer crimenes en toda la partida, como hay limite y no todos son malos pq sino se jode mucho
 void marcarCriminales(struct matrizComunas* tablero){
     struct nodoMatriz* actual = tablero->inicio;
     for(int i = 0; i < tablero->tamaño * tablero->tamaño; i++){
@@ -662,7 +672,7 @@ void marcarCriminales(struct matrizComunas* tablero){
         while(marcadas < cantidad){
             struct nodoPersona* persona = obtenerPersona(personas, randomIntervalo(1, personas->tamaño));
             if(persona->criminal)
-                continue;       //ya estaba marcada, saco otra
+                continue;       //ya es criminal, saco otra
 
             persona->criminal = 1;
             marcadas++;
@@ -857,7 +867,7 @@ void imprimirRelleno(){
     printf(" ╚══════╝ ");
 }
 
-//el espacio que deja una comuna disuelta: un cuadro del mismo tamaño pero vacio
+//el espacio que deja una comuna que muere o se disuelve
 void imprimirDisuelta(int linea){
     if(linea == 0)
         printf(" ┌╌╌╌╌╌╌┐ ");
@@ -870,7 +880,7 @@ void imprimirDisuelta(int linea){
 void imprimirLineaFila(struct nodoMatriz* inicioFila, int linea){
     struct nodoMatriz* actual = inicioFila;
 
-    while(actual != NULL){              //avanzo a la derecha hasta que se acabe la fila
+    while(actual != NULL){ //avanzo a la derecha hasta que se acabe la fila
         struct comuna* comuna = actual->comuna;
 
         if(comuna->disuelta){
@@ -879,6 +889,7 @@ void imprimirLineaFila(struct nodoMatriz* inicioFila, int linea){
             continue;
         }
 
+        //No se que hizo Felipe pero esta cool.
         //las comunas del jugador van en azul
         if(comuna->delJugador)
             printf(AZUL);
@@ -897,7 +908,7 @@ void imprimirLineaFila(struct nodoMatriz* inicioFila, int linea){
 
         actual = actual->derecha;
     }
-    printf("\n");                       //termino la linea
+    printf("\n");//termino la linea pa que vuelva a lo normal
 }
 
 void imprimirTablero(struct matrizComunas* tablero){
@@ -917,7 +928,7 @@ void imprimirTablero(struct matrizComunas* tablero){
                             | Tablero |
 ======================================================================
 */
-
+//Aqui basicamente hace que todo el juego se prepare antes de iniciar y te diga si no pudo leer algo
 struct matrizComunas* crearTablero(){
     imprimirLento(150,
         " ╔════════════════════════════════════╗\n"
@@ -1025,7 +1036,7 @@ void meterNumeros(struct matrizComunas* tablero){
     for(int i=0; i < tamaño; i++){
         struct comuna* comunaActual = actual->comuna;
         
-        comunaActual->numero = numero;      //le pongo el numero
+        comunaActual->numero = numero;//le pongo el numero
 
         //si es el ultimo de la linea entonces paso de 00 a 10 a 20, como sea
         if(actual->derecha == NULL)
@@ -1038,7 +1049,7 @@ void meterNumeros(struct matrizComunas* tablero){
     }
 }
 
-
+//te pasaste sebas
 void meterDiccionarios(struct listaSimple* serviciosDisponibles, struct listaSimple* bienesDisponibles, struct matrizComunas* tablero){
     struct nodoMatriz* actual = tablero->inicio;
 
@@ -1079,37 +1090,38 @@ void meterNombres(struct listaSimple* nombresComunas, struct matrizComunas* tabl
     }
 }
 
+//Usamos Claude para ayudarnos a repartir esa monda
 void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas* tablero){
     int totalComunas = tablero->tamaño * tablero->tamaño;
     int total = personasDisponibles->tamaño;
 
-    int base = total / totalComunas;        //lo que le tocaria a cada una si fuera parejo
-    int resto = total % totalComunas;       //lo que sobra de esa division
-    int desviacionMax = base * 6 / 10;      //hasta 60% arriba o abajo del promedio
+    int base = total / totalComunas; //lo que le tocaria a cada una si fuera parejo creo
+    int resto = total % totalComunas; //lo que sobra de esa division y asi
+    int desviacionMax = base * 6 / 10; //hasta 60% arriba o abajo del promedio
 
-    int compensacion = 0;                   //lo que una comuna gana/pierde respecto a su pareja
+    int compensacion = 0; //lo que una comuna gana/pierde respecto a quien mete
     struct nodoMatriz* actual = tablero->inicio;
 
     for(int i = 0; i < totalComunas; i++){
         int cantidad;
 
         if(i % 2 == 0 && i < totalComunas-1){
-            //primera de la pareja: se desvia del promedio (para arriba o para abajo)
+            //primera de la pareja se desvia del promedio para arriba o para abajo
             compensacion = randomIntervalo(-desviacionMax, desviacionMax);
             cantidad = base + compensacion;
         }
         else if(i % 2 == 1){
-            //segunda de la pareja: recibe lo contrario, así la pareja suma 2*base
+            //segunda de la pareja recibe lo contrario, así la pareja suma tiene 2 mas
             cantidad = base - compensacion;
         }
         else{
-            //si son impares, la última se queda sola con el promedio
+            //si son impares la última se queda sola con el promedio
             cantidad = base;
         }
 
-        if(i < resto) cantidad++;           //reparto lo que sobro de la division
+        if(i < resto) cantidad++;//reparto lo que sobro de la division al resto
 
-        //le paso 'cantidad' personas
+        //le paso la cantidad personas
         struct comuna* comunaActual = actual->comuna;
         comunaActual->personas = crearListaPersonas();
 
@@ -1120,7 +1132,7 @@ void meterPersonas(struct listaSimple* personasDisponibles, struct matrizComunas
             personasDisponibles->inicio = nodo->sigt;
             personasDisponibles->tamaño--;
 
-            //y la meto en la comuna, ya como persona
+            //y la meto en la comuna, ya como persona, que enredo
             agregarPersona(crearPersona(nodo->nombre), comunaActual->personas);
             free(nodo);
         }
@@ -1149,19 +1161,19 @@ int preguntarDimensión(){
 ======================================================================
 */
 
-#define NECESIDAD_MIN 5.0  //siempre hay necesidades extra: nunca llega a 0
+#define NECESIDAD_MIN 5.0  //siempre hay necesidades extra
 #define NECESIDAD_MAX 99.0  //nunca llega a 100
 
-//pesos de la necesidad (suman 1): los bienes pesan mas que los servicios
+//pesos de la necesidad, de que los bienes influyen mas
 #define PESO_BIENES         0.80
 #define PESO_SERVICIOS      0.20
 
-//pesos de la satisfaccion (suman 1)
-#define PESO_LOCAL          0.35    //que tan bien estoy yo (necesidad local)
-#define PESO_NEC_VECINOS    0.10    //necesidad de las comunas de alrededor
-#define PESO_SAT_VECINOS    0.10    //satisfaccion de las comunas de alrededor
-#define PESO_RECIPROCIDAD   0.25    //balance entre lo que doy y lo que recibo
-#define PESO_REGALOS        0.20    //regalos recibidos hace poco
+//pesos de la satisfaccion
+#define PESO_LOCAL          0.35 //que tan bien esta la comuna
+#define PESO_NEC_VECINOS    0.10 //necesidad de las comunas de alrededor
+#define PESO_SAT_VECINOS    0.10 //satisfaccion de las comunas de alrededor
+#define PESO_RECIPROCIDAD   0.25 //balance entre lo que doy y lo que recibo
+#define PESO_REGALOS        0.20 //regalos recibidos hace poco, ayudan a controlar eso
 
 //suma cuanto falta y cuanto es el maximo de todos los elementos de un diccionario
 void sumarFaltantes(struct DiccionarioBienes* diccionario, int* faltante, int* maximo){
@@ -1178,7 +1190,7 @@ void sumarFaltantes(struct DiccionarioBienes* diccionario, int* faltante, int* m
     }
 }
 
-//necesidad = lo que falta de bienes (pesa mas) y lo que falta de gente que sepa cada servicio
+//necesidad es lo que falta de bienes y lo que falta de gente que sepa cada servicio
 //solo depende de lo que tiene la comuna, y si hubo un desastre hace poco sube mas
 double calcularNecesidad(struct comuna* comuna){
     actualizarServicios(comuna);
@@ -1188,12 +1200,12 @@ double calcularNecesidad(struct comuna* comuna){
     sumarFaltantes(comuna->diccionarioBienes, &faltanteBienes, &maximoBienes);
     double necesidadBienes = (maximoBienes == 0) ? NECESIDAD_MIN : 100.0 * faltanteBienes / maximoBienes;
 
-    //y los servicios en personas, por eso se sacan aparte y no se suman con los bienes
+    //y los servicios en personas, por eso se sacan aparte y no se suman con los bienes, viste esa!!
     int faltanteServicios = 0, maximoServicios = 0;
     sumarFaltantes(comuna->diccionarioServicios, &faltanteServicios, &maximoServicios);
     int cubiertos = maximoServicios - faltanteServicios;
 
-    //una comuna con poca gente no puede ocupar mas puestos que las personas que tiene
+    //una comuna con poca gente no puede ocupar mas puestos que las personas que tiene, y no explote todo
     int puestos = maximoServicios;
     if(puestos > comuna->personas->tamaño) puestos = comuna->personas->tamaño;
 
@@ -1210,7 +1222,7 @@ double calcularNecesidad(struct comuna* comuna){
     return necesidad;
 }
 
-//reciprocidad: 100 si ha dado lo mismo que ha recibido, baja entre mas desbalanceado este
+//reciprocidad donde solo da 100 si ha dado lo mismo que ha recibido, baja entre mas desbalanceado este el intercambio y sea mas justo
 double calcularReciprocidad(struct comuna* comuna){
     int total = comuna->regalosDados + comuna->regalosRecibidos;
 
@@ -1245,14 +1257,14 @@ void sumarVecino(struct nodoMatriz* vecino, double* sumaNecesidad, double* sumaS
     (*cuenta)++;
 }
 
-//vecinos = las 8 comunas que rodean: esquina=3, borde=5, centro=8
+//vecinos son las 8 comunas que rodea, la esquina es 3, el borde es 5, el centro el 8
 void sumarVecinos(struct nodoMatriz* nodo, double* sumaNecesidad, double* sumaSatisfaccion, int* cuenta){
     sumarVecino(nodo->arriba, sumaNecesidad, sumaSatisfaccion, cuenta);
     sumarVecino(nodo->abajo, sumaNecesidad, sumaSatisfaccion, cuenta);
     sumarVecino(nodo->izquierda, sumaNecesidad, sumaSatisfaccion, cuenta);
     sumarVecino(nodo->derecha, sumaNecesidad, sumaSatisfaccion, cuenta);
 
-    //las diagonales se alcanzan dando dos pasos
+    //las diagonales se alcanzan haciendo dos movimiento, no se como hice pero se hizo
     sumarVecino(nodo->arriba ? nodo->arriba->izquierda : NULL, sumaNecesidad, sumaSatisfaccion, cuenta);
     sumarVecino(nodo->arriba ? nodo->arriba->derecha : NULL, sumaNecesidad, sumaSatisfaccion, cuenta);
     sumarVecino(nodo->abajo ? nodo->abajo->izquierda : NULL, sumaNecesidad, sumaSatisfaccion, cuenta);
@@ -1273,11 +1285,12 @@ void calcularIndices(struct nodoMatriz* nodo){
 
     comuna->reciprocidad = calcularReciprocidad(comuna);
 
+    //aqui suma todo eso
     comuna->satisfaccion = PESO_LOCAL * (100.0 - comuna->necesidad)
-                         + PESO_NEC_VECINOS * (100.0 - necesidadVecinos)
-                         + PESO_SAT_VECINOS * satisfaccionVecinos
-                         + PESO_RECIPROCIDAD * comuna->reciprocidad
-                         + PESO_REGALOS * calcularNivelRegalos(comuna);
+    + PESO_NEC_VECINOS * (100.0 - necesidadVecinos)
+    + PESO_SAT_VECINOS * satisfaccionVecinos
+    + PESO_RECIPROCIDAD * comuna->reciprocidad
+    + PESO_REGALOS * calcularNivelRegalos(comuna);
 }
 
 //recalcula los indices de todas las comunas del tablero
@@ -1316,7 +1329,7 @@ void calcularIndicesTablero(struct matrizComunas* tablero){
 ======================================================================
 */
 
-//ahora cada persona sale en una linea con lo que sabe hacer, sus libros y su criminalidad
+//cada persona sale en una linea con lo que sabe hacer, sus libros y su criminalidad
 void imprimirPersonas(struct listaPersonas* personas, char* nombre){
     printf(" ╔══════════════════════════════════════════════===+- -- -\n");
     printf(" ║ Personas de la comuna %s: %d\n", nombre, personas->tamaño);
@@ -1327,7 +1340,7 @@ void imprimirPersonas(struct listaPersonas* personas, char* nombre){
         printf(" - %-12s | Libros: %d | Criminalidad: %2d%% | Servicios: ",
                 actual->nombre, actual->librosLeidos, actual->criminalidad);
 
-        //sus servicios separados por coma
+        //sus servicios separados por coma, check
         struct nodoListaSimple* servicio = actual->servicios->inicio;
         if(servicio == NULL)
             printf("ninguno");
@@ -1351,7 +1364,7 @@ void imprimirComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
     printf(" ║ Te encuentras en la comuna %02d %s\n", comuna->numero, comuna->nombre);
     printf(" ╚═════════════════════════════════════════════===+- -\n");
     printf(" |                      |                    |                      |\n");
-    printf(" |  Satisfacción: %5.1f |  Necesidad: %5.1f  |  Reciprocidad: %5.1f |\n\n", comuna->satisfaccion, comuna->necesidad, comuna->reciprocidad);
+    printf(" |  Satisfacción: %5.1f |  Necesidad: %5.1f  |  Reciprosidad: %5.1f |\n\n", comuna->satisfaccion, comuna->necesidad, comuna->reciprocidad);
 
     while(1){
         imprimirLento(100,
@@ -1397,7 +1410,7 @@ void imprimirComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
     printf("\n___________________________________________________\n");
 }
 
-//retorna NULL cuando no se escogio una comuna (paso el dia, vio logros o guardo)
+//retorna NULL cuando no se escogio una comuna
 struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* tablero){
     printf(" ╔══════════════════════════════════════════════===+- -- -\n");
     printf(" ║ Comuna actual: %02d    | Día actual: %d / %d\n", actual->comuna->numero, tablero->dia, tablero->diasTotales);
@@ -1411,7 +1424,7 @@ struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* 
     int opcion = pedirEnIntervalo(0,3);
 
     if(opcion == 0){
-        return buscarComuna(tablero, 1);      //solo deja escoger las del jugador
+        return buscarComuna(tablero, 1); //solo deja escoger las del jugador
     }else if(opcion == 1){
         pasarDia(tablero);
         return NULL;
@@ -1437,7 +1450,7 @@ struct nodoMatriz* pedirComuna(struct nodoMatriz* actual, struct matrizComunas* 
     }
 }
 
-//soloJugador=1 cuando solo se puede escoger una comuna del jugador, 0 cuando sirve cualquiera del mapa
+//1 cuando solo se puede escoger una comuna del jugador y 0 cuando sirve cualquiera del mapa
 struct nodoMatriz* buscarComuna(struct matrizComunas* tablero, int soloJugador){
     imprimirLento(70,
         " ╔═══════════════════════════════════════════╗\n"
@@ -1531,7 +1544,7 @@ void pasarDia(struct matrizComunas* tablero){
         tablero->dia
     );
 
-    //las comunas autonomas hacen sus intercambios calladitas
+    //las comunas autonomas hacen sus intercambios calladitas asi no estorban las feas
     intercambiosAutonomos(tablero);
 
     //consumo de todas las comunas
@@ -1540,7 +1553,7 @@ void pasarDia(struct matrizComunas* tablero){
         struct comuna* comuna = actual->comuna;
 
         if(!comuna->disuelta){
-            //solo se gastan los bienes: los servicios son la gente que los sabe hacer
+            //solo se gastan los bienes pues los servicios son la gente que los sabe hacer pues
             consumirDiccionario(comuna->diccionarioBienes);
             comuna->intercambiosHoy = 0;
 
@@ -1565,11 +1578,11 @@ void pasarDia(struct matrizComunas* tablero){
     continuarTormentas(tablero);
     escogerEmergencias(tablero);
 
-    //con todo ya cambiado se recalculan los indices y se ve cuales comunas no aguantaron
+    //con todo ya cambiado se recalculan los indices y se ve cuales comunas no aguantaron ohhhh
     calcularIndicesTablero(tablero);
     revisarDisoluciones(tablero);
 
-    //racha de dias sin intercambiar (para los logros)
+    //racha de dias sin intercambiar, para el logro
     if(tablero->logros.intercambioHoy){
         tablero->logros.diasSinIntercambiar = 0;
     }else{
@@ -1591,6 +1604,7 @@ void pasarDia(struct matrizComunas* tablero){
                     | Emergencias |
 ======================================================================
 */
+//ESto queda casi que igual, no tocar!!!
 
 //decide si hoy hay emergencias, cada 1 a 3 dias, y mas a la vez entre mas grande sea el tablero
 void escogerEmergencias(struct matrizComunas* tablero){
@@ -1852,7 +1866,7 @@ int contarElementos(struct DiccionarioBienes* diccionario){
     return total;
 }
 
-//devuelve la 'posicion'
+//devuelve la posicion
 struct nodoBienes* obtenerElemento(struct DiccionarioBienes* diccionario, int posicion){
     int contador = 0;
 
@@ -1869,7 +1883,7 @@ struct nodoBienes* obtenerElemento(struct DiccionarioBienes* diccionario, int po
     }
     return NULL; //si no existe esa posicion
 }
-
+----
 void imprimirDiccionarioNumerado(struct DiccionarioBienes* diccionario){
     int numero = 1;
 
