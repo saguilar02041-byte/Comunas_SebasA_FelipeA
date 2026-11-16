@@ -51,8 +51,8 @@ las cosas dentro de la simulacion y asi. Todo se cambia a gusto y queda mas boni
 #define PROB_SOLICITUD          20 //probabilidad de que le pidan un intercambio al jugador
 
 //Condiciones para la disolucion de comunas
-#define NECESIDAD_DISOLUCION    75.0
-#define SATISFACCION_DISOLUCION 30.0
+#define NECESIDAD_DISOLUCION    70.0
+#define SATISFACCION_DISOLUCION 40.0
 
 //extra
 //Cuantas comunas usa el jugador, lo hicimos asi pq nos parece mas divertido y dinamico
@@ -2995,7 +2995,7 @@ void imprimirArbolChaf(struct nodoChaf* raiz){
     int cortado = 0;
     colocarNodo(raiz, 0, 0, ANCHO_ARBOL, renglones, &cortado);
 
-    printf("\n  Árbol de la biblioteca | raíz: \"%s\"\n\n", raiz->titulo);
+    printf("\n  Árbol de la biblioteca");
     for(int i = 0; i < NIVELES_ARBOL; i++){
         //un nivel sin nodos no se imprime (queda el nombre de la raiz en el centro del primero)
         int vacio = 1;
