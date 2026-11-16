@@ -688,8 +688,8 @@ void imprimirCatalogo(struct nodoAVL* raiz, int* contador, int limite);
 */
 
 struct nodoChaf* crearNodoSplay(char* titulo);
-struct nodoChaf* rotarDerechaSplay(struct nodoChaf* nodo);
-struct nodoChaf* rotarIzquierdaSplay(struct nodoChaf* nodo);
+struct nodoChaf* rotarDerechaChaf(struct nodoChaf* nodo);
+struct nodoChaf* rotarIzquierdaChaf(struct nodoChaf* nodo);
 
 /**
  * Función que chaflanea :vvvvv
@@ -699,7 +699,7 @@ struct nodoChaf* chaflanear(struct nodoChaf* raiz, char* titulo);
 /**
  * Función que inserta un libro nuevo y lo deja en la raíz
  */
-struct nodoChaf* insertarSplay(struct nodoChaf* raiz, struct nodoChaf* nuevo);
+struct nodoChaf* insertarChaf(struct nodoChaf* raiz, struct nodoChaf* nuevo);
 
 /**
  * Inserción normal de árbol binario, solo se usa al cargar una partida para dejar el árbol igual
@@ -709,7 +709,7 @@ struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* n
 int contarSplay(struct nodoChaf* raiz);
 struct nodoChaf* obtenerSplay(struct nodoChaf* raiz, int posicion, int* contador);
 void liberarSplay(struct nodoChaf* raiz);
-void imprimirArbolSplay(struct nodoChaf* raiz);
+void imprimirArbolChaf(struct nodoChaf* raiz);
 
 /*
 =================================================
@@ -766,7 +766,7 @@ int imprimirLogros(struct matrizComunas* tablero, int final);
 */
 
 void guardarDiccionario(FILE* archivo, struct DiccionarioBienes* diccionario);
-void guardarSplay(FILE* archivo, struct nodoChaf* raiz);
+void guardarChaflaneado(FILE* archivo, struct nodoChaf* raiz);
 void guardarLista(FILE* archivo, struct listaSimple* lista);
 
 /**

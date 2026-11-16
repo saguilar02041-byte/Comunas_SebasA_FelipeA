@@ -1974,7 +1974,7 @@ void realizarIntercambio(struct nodoMatriz* nodoA, struct matrizComunas* tablero
 
     imprimirLento(70,
         "\n ╔═══════════════════════════════╗\n"
-        " ║ * Cuántas unidades entrega   ║\n"
+        " ║ * Cuántas unidades entregas   ║\n"
         " ╚═══════════════════════════════╝\n"
         " |  Mínimo = 1   |  Máximo = %-3d |\n\n",
         productoA->cantidad
@@ -2050,7 +2050,7 @@ void realizarIntercambio(struct nodoMatriz* nodoA, struct matrizComunas* tablero
 
     int realA = 0, realB = 0;
     int resultado = aplicarIntercambio(comunaA, productoA, cantidadA, servicioA,
-                                       comunaB, productoB, cantidadB, servicioB, &realA, &realB);
+                                    comunaB, productoB, cantidadB, servicioB, &realA, &realB);
     if(!resultado){
         imprimirAdvertencia("| Ninguna de las dos comunas tiene espacio para recibir | Intercambio cancelado |");
         return;
@@ -2073,8 +2073,8 @@ void realizarIntercambio(struct nodoMatriz* nodoA, struct matrizComunas* tablero
 //mueve los productos entre las dos comunas: A entrega productoA y B entrega productoB
 //lo usan el jugador y las comunas autonomas, por eso no imprime nada
 int aplicarIntercambio(struct comuna* comunaA, struct nodoBienes* productoA, int cantidadA, int servicioA,
-                       struct comuna* comunaB, struct nodoBienes* productoB, int cantidadB, int servicioB,
-                       int* realA, int* realB){
+                    struct comuna* comunaB, struct nodoBienes* productoB, int cantidadB, int servicioB,
+                    int* realA, int* realB){
 
     //busco los productos en la comuna que los recibe
     struct nodoBienes* productoAenB = buscarBienExacto(servicioA ? comunaB->diccionarioServicios : comunaB->diccionarioBienes, productoA->nombre);
@@ -2189,7 +2189,7 @@ struct nodoBienes* masAbundante(struct DiccionarioBienes* diccionario){
 
 //la comuna 'pide' arma su propuesta: pide lo que mas le falta y da lo que mas le sobra
 int armarPropuesta(struct comuna* pide, struct comuna* otra, struct nodoBienes** productoDa, int* cantidadDa, int* servicioDa,
-                   struct nodoBienes** productoPide, int* cantidadPide, int* servicioPide){
+                struct nodoBienes** productoPide, int* cantidadPide, int* servicioPide){
 
     //lo que mas le falta, a veces un bien y a veces un servicio
     *servicioPide = randomIntervalo(0, 1);
@@ -2270,7 +2270,7 @@ void buscarIntercambio(struct nodoMatriz* nodoA, struct matrizComunas* tablero){
 
         int realA, realB;
         if(aplicarIntercambio(comunaA, productoDa, cantidadDa, servicioDa,
-                              comunaB, productoPide, cantidadPide, servicioPide, &realA, &realB))
+                            comunaB, productoPide, cantidadPide, servicioPide, &realA, &realB))
             return;     //ya consiguio su intercambio de esta vuelta
     }
 }
@@ -2330,7 +2330,7 @@ void solicitudesAutonomas(struct matrizComunas* tablero){
 
         int realA, realB;
         if(!aplicarIntercambio(otra, productoDa, cantidadDa, servicioDa,
-                               mia, productoPide, cantidadPide, servicioPide, &realA, &realB)){
+                            mia, productoPide, cantidadPide, servicioPide, &realA, &realB)){
             imprimirAdvertencia("Al final no había espacio para recibir | No se hizo el intercambio");
             continue;
         }
@@ -2445,7 +2445,6 @@ void liberarDiccionario(struct DiccionarioBienes* diccionario){
 }
 
 //si llega mas gente la comuna ocupa mas de todo, entonces los maximos suben un poco
-//(no en la misma proporcion porque si no las vecinas se caen una tras otra)
 void ajustarMaximos(struct comuna* comuna, int personasAntes){
     int personasAhora = comuna->personas->tamaño;
     if(personasAntes <= 0 || personasAhora == personasAntes)
@@ -2551,15 +2550,13 @@ void disolverComuna(struct nodoMatriz* nodo, struct matrizComunas* tablero){
 
     imprimirLento(100,
         " ╔══════════════════════════════════════════════===+- -- -\n"
-        " ║ !! La comuna %02d %s se disolvió !!\n"
-        " ║ Sus %d personas se fueron a otras comunas\n"
-        " ║ Sus bienes quedaron abandonados\n",
-        comuna->numero, comuna->nombre, total);
+        " ║ !! La comuna %02d %s se disolvió !!\n",
+        comuna->numero, comuna->nombre);
 
     //si era del jugador se apunta para los logros
     if(comuna->delJugador){
         comuna->delJugador = 0;
-        printf(" ║ Era una de tus comunas\n");
+        printf(" ║ Era la tuya sonso\n");
 
         struct logros* logros = &tablero->logros;
         logros->comunasPerdidas++;
@@ -2599,10 +2596,8 @@ void revisarDisoluciones(struct matrizComunas* tablero){
 
 /*
 ======================================================================
-                | Árbol AVL: catálogo de libros |
+                | Árbol AVL, catálogo de libros |
 ======================================================================
-Se arma una sola vez al arrancar con los nombres de todos los archivos de la carpeta,
-como queda balanceado buscar un libro por su nombre exacto es rapido aunque sean miles
 */
 
 int alturaAVL(struct nodoAVL* nodo){
@@ -2711,7 +2706,6 @@ struct nodoAVL* obtenerAVL(struct nodoAVL* raiz, int posicion, int* contador){
     return obtenerAVL(raiz->der, posicion, contador);
 }
 
-//lee la carpeta (y las carpetas que tenga adentro) y mete cada archivo al AVL
 struct nodoAVL* cargarCatalogo(char* carpeta, struct nodoAVL* raiz, int* total){
     DIR* directorio = opendir(carpeta);
     if(directorio == NULL)
@@ -2763,7 +2757,7 @@ void prepararBiblioteca(struct matrizComunas* tablero){
     tablero->catalogo = cargarCatalogo(CARPETA_LIBROS, NULL, &tablero->totalLibros);
 
     if(tablero->totalLibros == 0)
-        imprimirAdvertencia("No hay libros en la carpeta 'libros' | Las bibliotecas van a estar vacías");
+        imprimirAdvertencia("No hay libros | Las bibliotecas van a estar vacías");
     else
         printf(" | Libros en el catálogo: %d | Altura del árbol AVL: %d |\n\n", tablero->totalLibros, alturaAVL(tablero->catalogo));
 }
@@ -2785,10 +2779,9 @@ void imprimirCatalogo(struct nodoAVL* raiz, int* contador, int limite){
 
 /*
 ======================================================================
-            | Árbol chaflaneado (splay): caché de la biblioteca |
+                        | Árbol chaflaneado|
 ======================================================================
-Cada vez que se busca un libro, ese libro sube hasta la raiz con rotaciones.
-Asi los libros que mas se leen quedan arriba y se encuentran casi de una vez
+
 */
 
 struct nodoChaf* crearNodoSplay(char* titulo){
@@ -2798,26 +2791,26 @@ struct nodoChaf* crearNodoSplay(char* titulo){
 }
 
 //el hijo izquierdo sube y el nodo baja a la derecha
-struct nodoChaf* rotarDerechaSplay(struct nodoChaf* nodo){
+struct nodoChaf* rotarDerechaChaf(struct nodoChaf* nodo){
     struct nodoChaf* sube = nodo->izq;
 
     nodo->izq = sube->der;
     sube->der = nodo;
 
     if(verRotaciones)
-        printf("    ~ rotación a la derecha: sube \"%.25s\" y baja \"%.25s\"\n", sube->titulo, nodo->titulo);
+        printf("    ~ rotación a la derecha ");
     return sube;
 }
 
 //el hijo derecho sube y el nodo baja a la izquierda
-struct nodoChaf* rotarIzquierdaSplay(struct nodoChaf* nodo){
+struct nodoChaf* rotarIzquierdaChaf(struct nodoChaf* nodo){
     struct nodoChaf* sube = nodo->der;
 
     nodo->der = sube->izq;
     sube->izq = nodo;
 
     if(verRotaciones)
-        printf("    ~ rotación a la izquierda: sube \"%.25s\" y baja \"%.25s\"\n", sube->titulo, nodo->titulo);
+        printf("    ~ rotación a la izquierda ");
     return sube;
 }
 
@@ -2840,18 +2833,18 @@ struct nodoChaf* chaflanear(struct nodoChaf* raiz, char* titulo){
         if(comparacionHijo < 0){
             //zig-zig: izquierda de la izquierda, primero se rota el abuelo
             raiz->izq->izq = chaflanear(raiz->izq->izq, titulo);
-            raiz = rotarDerechaSplay(raiz);
+            raiz = rotarDerechaChaf(raiz);
         }else if(comparacionHijo > 0){
             //zig-zag: derecha de la izquierda, primero se rota el papa
             raiz->izq->der = chaflanear(raiz->izq->der, titulo);
             if(raiz->izq->der != NULL)
-                raiz->izq = rotarIzquierdaSplay(raiz->izq);
+                raiz->izq = rotarIzquierdaChaf(raiz->izq);
         }
 
         //zig: la ultima rotacion lo deja en la raiz
         if(raiz->izq == NULL)
             return raiz;
-        return rotarDerechaSplay(raiz);
+        return rotarDerechaChaf(raiz);
     }
 
     //esta por la derecha, es lo mismo pero al reves
@@ -2863,21 +2856,21 @@ struct nodoChaf* chaflanear(struct nodoChaf* raiz, char* titulo){
     if(comparacionHijo > 0){
         //zig-zig
         raiz->der->der = chaflanear(raiz->der->der, titulo);
-        raiz = rotarIzquierdaSplay(raiz);
+        raiz = rotarIzquierdaChaf(raiz);
     }else if(comparacionHijo < 0){
         //zig-zag
         raiz->der->izq = chaflanear(raiz->der->izq, titulo);
         if(raiz->der->izq != NULL)
-            raiz->der = rotarDerechaSplay(raiz->der);
+            raiz->der = rotarDerechaChaf(raiz->der);
     }
 
     if(raiz->der == NULL)
         return raiz;
-    return rotarIzquierdaSplay(raiz);
+    return rotarIzquierdaChaf(raiz);
 }
 
 //mete un libro nuevo en la raiz. El arbol ya tiene que venir chaflaneado con ese titulo
-struct nodoChaf* insertarSplay(struct nodoChaf* raiz, struct nodoChaf* nuevo){
+struct nodoChaf* insertarChaf(struct nodoChaf* raiz, struct nodoChaf* nuevo){
     if(raiz == NULL)
         return nuevo;
 
@@ -2894,8 +2887,6 @@ struct nodoChaf* insertarSplay(struct nodoChaf* raiz, struct nodoChaf* nuevo){
     return nuevo;
 }
 
-//insercion normal de arbol binario de busqueda, sin rotar nada
-//solo se usa al cargar una partida, para que el arbol quede con la misma forma que tenia
 struct nodoChaf* insertarSinChaflanear(struct nodoChaf* raiz, struct nodoChaf* nuevo){
     if(raiz == NULL)
         return nuevo;
@@ -2939,8 +2930,6 @@ void liberarSplay(struct nodoChaf* raiz){
     free(raiz);
 }
 
-//escribe el nombre corto del nodo en el renglon de su nivel, centrado en el pedazo que le toca
-//(esta funcion solo la usa imprimirArbolSplay, por eso no esta en el .h)
 void colocarNodo(struct nodoChaf* nodo, int nivel, int izquierda, int derecha, char renglones[NIVELES_ARBOL][ANCHO_ARBOL + 1], int* cortado){
     if(nodo == NULL)
         return;
@@ -2974,9 +2963,9 @@ void colocarNodo(struct nodoChaf* nodo, int nivel, int izquierda, int derecha, c
 }
 
 //imprime los primeros niveles del arbol en forma de piramide
-void imprimirArbolSplay(struct nodoChaf* raiz){
+void imprimirArbolChaf(struct nodoChaf* raiz){
     if(raiz == NULL){
-        printf("\n | La caché de esta biblioteca está vacía |\n\n");
+        printf("\n | El árbol chaflaneado está vacío |\n\n");
         return;
     }
 
@@ -3014,7 +3003,6 @@ void imprimirArbolSplay(struct nodoChaf* raiz){
 ======================================================================
 */
 
-//"carga" el libro: lo abre y lo lee completo, contando lo que leyo
 int cargarLibro(char* ruta, long* bytes, int* lineas){
     FILE* archivo = fopen(ruta, "r");
     if(archivo == NULL)
@@ -3037,6 +3025,7 @@ int cargarLibro(char* ruta, long* bytes, int* lineas){
 void aprenderServicio(struct matrizComunas* tablero, struct nodoPersona* persona){
     struct listaSimple* disponibles = tablero->serviciosDisponibles;
 
+    //por si acaso
     int nuevos = disponibles->tamaño - persona->servicios->tamaño;
     if(nuevos <= 0){
         printf(" | %s ya sabe todos los servicios que existen |\n", persona->nombre);
@@ -3106,10 +3095,10 @@ void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodo
         nuevo->tamañoBytes = bytes;
         nuevo->lineas = lineas;
         nuevo->vecesLeido = 1;
-        comuna->biblioteca = insertarSplay(comuna->biblioteca, nuevo);
+        comuna->biblioteca = insertarChaf(comuna->biblioteca, nuevo);
     }
 
-    imprimirArbolSplay(comuna->biblioteca);
+    imprimirArbolChaf(comuna->biblioteca);
 
     persona->librosLeidos++;
     persona->leyoHoy = 1;
@@ -3122,8 +3111,10 @@ void leerLibro(struct matrizComunas* tablero, struct comuna* comuna, struct nodo
 
 //muestra la gente de la comuna para escoger quienes van a leer
 void enviarALeer(struct comuna* comuna, struct matrizComunas* tablero){
+    
+    //si no hay libros
     if(tablero->totalLibros == 0){
-        imprimirAdvertencia("No hay libros en la carpeta 'libros'");
+        imprimirAdvertencia("No hay libros...");
         return;
     }
 
@@ -3166,7 +3157,7 @@ void enviarALeer(struct comuna* comuna, struct matrizComunas* tablero){
         }else{
             persona->seleccionada = 1;
             escogidas++;
-            printf(" | + %s | van %d |\n", persona->nombre, escogidas);
+            printf(" | se escogió a %s |\n", persona->nombre);
         }
     }
 
@@ -3209,7 +3200,7 @@ void menuBiblioteca(struct comuna* comuna, struct matrizComunas* tablero){
             if(tablero->totalLibros > 40)
                 printf(" ... y %d más\n", tablero->totalLibros - 40);
         }else if(opcion == 2){
-            imprimirArbolSplay(comuna->biblioteca);
+            imprimirArbolChaf(comuna->biblioteca);
         }else{
             return;
         }
@@ -3222,7 +3213,6 @@ void menuBiblioteca(struct comuna* comuna, struct matrizComunas* tablero){
 ======================================================================
 */
 
-//una persona marcada hace algo malo y le sube la criminalidad, si llega al limite la expulsan
 void cometerCrimen(struct nodoPersona* persona, struct nodoMatriz* nodo, struct matrizComunas* tablero){
     struct comuna* comuna = nodo->comuna;
 
@@ -3239,16 +3229,17 @@ void cometerCrimen(struct nodoPersona* persona, struct nodoMatriz* nodo, struct 
     else                    { crimen = "cometió un asesinato";            valor = 50; }
 
     persona->criminalidad += valor;
-    if(persona->criminalidad > 100) persona->criminalidad = 100;
+    if(persona->criminalidad > 99) persona->criminalidad = 99;
 
     //solo se avisa lo que pasa en las comunas del jugador
     if(comuna->delJugador)
         printf(" |  Comuna %02d: %s %s  |\n\n", comuna->numero, persona->nombre, crimen);
 
+    //no hace nada si no es suficientemente criminal
     if(persona->criminalidad < CRIMINALIDAD_EXPULSION)
         return;
 
-    //expulsion: se va a una comuna adyacente con todo y sus servicios
+    //se expulsa y se va a una comuna adyacente con todo y sus servicios
     struct nodoMatriz* vecinos[8];
     int cantidad = obtenerVecinosVivos(nodo, vecinos);
     if(cantidad == 0)
@@ -3263,6 +3254,8 @@ void cometerCrimen(struct nodoPersona* persona, struct nodoMatriz* nodo, struct 
     actualizarServicios(comuna);
     actualizarServicios(destino);
 
+
+    //printea solo los que son comunas del jugador
     if(comuna->delJugador || destino->delJugador){
         char mensaje[200];
         snprintf(mensaje, sizeof(mensaje), "%s fue expulsado de la comuna %02d y se fue a la %02d", persona->nombre, comuna->numero, destino->numero);
@@ -3364,8 +3357,7 @@ int imprimirLogros(struct matrizComunas* tablero, int final){
 ======================================================================
                     | Guardar y cargar partida |
 ======================================================================
-El archivo de guardado es de texto: cada nombre va en su propia linea (porque tienen espacios)
-y los numeros van juntos en una linea. Se carga leyendo en el mismo orden en que se guardo
+nosotros lo intentamos...
 */
 
 //cantidad de elementos y despues uno por linea
@@ -3394,18 +3386,19 @@ void guardarDiccionario(FILE* archivo, struct DiccionarioBienes* diccionario){
     }
 }
 
-//se guarda en preorden (primero el nodo y despues sus hijos) para poder rearmarlo igualito
-void guardarSplay(FILE* archivo, struct nodoChaf* raiz){
+//se guarda en preorden
+void guardarChaflaneado(FILE* archivo, struct nodoChaf* raiz){
     if(raiz == NULL)
         return;
 
     fprintf(archivo, "%s\n", raiz->titulo);
     fprintf(archivo, "%ld %d %d\n", raiz->tamañoBytes, raiz->lineas, raiz->vecesLeido);
 
-    guardarSplay(archivo, raiz->izq);
-    guardarSplay(archivo, raiz->der);
+    guardarChaflaneado(archivo, raiz->izq);
+    guardarChaflaneado(archivo, raiz->der);
 }
 
+//perdón si se ve muy IA, ibamos cortos de tiempo
 int guardarPartida(struct matrizComunas* tablero){
     FILE* archivo = fopen(ARCHIVO_GUARDADO, "w");
     if(archivo == NULL)
@@ -3453,7 +3446,7 @@ int guardarPartida(struct matrizComunas* tablero){
 
         //la cache de la biblioteca
         fprintf(archivo, "%d\n", contarSplay(comuna->biblioteca));
-        guardarSplay(archivo, comuna->biblioteca);
+        guardarChaflaneado(archivo, comuna->biblioteca);
     }
 
     fclose(archivo);
@@ -3509,6 +3502,8 @@ struct DiccionarioBienes* cargarDiccionario(FILE* archivo){
     return diccionario;
 }
 
+//Sinceramente no sabíamos como hacer esto, gracias claude...
+//Perdón si se ve muy IA
 struct matrizComunas* cargarPartida(){
     FILE* archivo = fopen(ARCHIVO_GUARDADO, "r");
     if(archivo == NULL)
@@ -3616,7 +3611,8 @@ void calcularPromedios(struct matrizComunas* tablero, double* satisfaccion, doub
 
     struct nodoMatriz* actual = tablero->inicio;
     for(int i = 0; i < total; i++){
-        if(!actual->comuna->disuelta){
+        
+        if( !actual->comuna->disuelta){
             sumaSatisfaccion += actual->comuna->satisfaccion;
             sumaNecesidad += actual->comuna->necesidad;
             vivas++;
@@ -3642,7 +3638,7 @@ const char* clasificarSociedad(double satisfaccion){
     else if(satisfaccion < 60) return "Normal, como el gobierno de nosemequedesinideas";
     else if(satisfaccion < 70) return "Bien, como el gobierno de Xi Jinping";
     else if(satisfaccion < 90) return "Excelente, como la clase de Aurelio";
-    else return "¡¡Sociedad Perfecta!!, como ningun gobierno podria";
+    else return "¡¡Sociedad Perfecta!!, como ningun gobierno podría";
 }
 
 void mostrarFinPartida(struct matrizComunas* tablero){
@@ -3657,7 +3653,7 @@ void mostrarFinPartida(struct matrizComunas* tablero){
     imprimirLento(150,
         "\n___________________________________________________\n"
         " ╔════════════════════════════════════╗\n"
-        " ║  !!    Se termino el juego   !!    ║\n"
+        " ║  !!    Se terminó el juego   !!    ║\n"
         " ╚════════════════════════════════════╝\n\n"
     );
 
@@ -3751,9 +3747,9 @@ int main(){
 
     if(tablero->salir){
         imprimirLento(100,
-            "\n ╔════════════════════════════════════╗\n"
-            " ║  Partida guardada | ¡Hasta luego!  ║\n"
-            " ╚════════════════════════════════════╝\n\n"
+            "\n ╔══════════════════════╗\n"
+            " ║  Partida guardada :3 ║\n"
+            " ╚══════════════════════╝\n\n"
         );
         return 0;
     }
